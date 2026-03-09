@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClimbUp | Your AI Study Buddy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { brand: '#6366f1', accent: '#fbbf24' } } }
+        }
+    </script>
+
+    <style>
+        /* The Glass-Brutalist Aesthetic */
+        .glass-brutal {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 3px solid #111827;
+            box-shadow: 6px 6px 0px #111827;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .dark .glass-brutal {
+            background: rgba(30, 41, 59, 0.6);
+            border-color: #f8fafc;
+            box-shadow: 6px 6px 0px #f8fafc;
+        }
+
+        .glass-brutal:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px #111827;
+        }
+        .dark .glass-brutal:active {
+            box-shadow: 2px 2px 0px #f8fafc;
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-8px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        /* Mountain Theme Backgrounds */
+        body { transition: background-color 0.5s ease; }
+        .bg-day-climb { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
+        .bg-night-climb { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+    </style>
+</head>
+<body class="bg-day-climb text-gray-900 dark:text-gray-100 min-h-screen flex flex-col font-sans">
+
+    <header class="p-6 flex justify-between items-center w-full max-w-4xl mx-auto">
+        <div class="flex items-center gap-2 font-black text-2xl tracking-tighter">
+            <i data-lucide="mountain" class="text-brand w-8 h-8"></i>
+            ClimbUp
+        </div>
+        <button id="themeToggle" class="glass-brutal p-2 rounded-full cursor-pointer">
+            <i data-lucide="moon" id="themeIcon"></i>
+        </button>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4 w-full max-w-4xl mx-auto">
+
+        <section id="view-auth" class="w-full text-center pop-in">
+            <i data-lucide="lock" class="w-16 h-16 mx-auto text-brand mb-4"></i>
+            <h1 class="text-4xl md:text-5xl font-black mb-2 leading-tight">
+                Welcome to <span class="text-brand">ClimbUp</span>
+            </h1>
+            <p class="text-lg mb-8 opacity-80">Sign in to sync your progress and climb.</p>
+            
+            <div class="glass-brutal p-8 max-w-sm mx-auto flex flex-col gap-4">
+                <div class="flex bg-gray-200 dark:bg-slate-700 rounded-lg p-1 mb-2 font-bold text-sm">
+                    <button id="tab-login" onclick="toggleAuth('login')" class="flex-1 py-2 rounded-md bg-white dark:bg-slate-600 shadow text-brand transition-all">Login</button>
+                    <button id="tab-signup" onclick="toggleAuth('signup')" class="flex-1 py-2 rounded-md text-gray-500 hover:text-gray-800 dark:hover:text-white transition-all">Sign Up</button>
+                </div>
+
+                <form id="auth-form" onsubmit="handleAuth(event)" class="flex flex-col gap-4">
+                    <input type="text" id="auth-name" placeholder="Full Name" class="hidden w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                    
+                    <input type="email" id="auth-email" placeholder="Email Address" required class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                    
+                    <input type="password" id="auth-password" placeholder="Password" required class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                    
+                    <button type="submit" id="auth-submit-btn" class="bg-brand text-white font-black text-lg py-3 rounded-xl glass-brutal mt-2 hover:bg-indigo-600">
+                        Login
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section id="view-basecamp" class="w-full text-center hidden">
+            <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
+                Conquer Your <br><span class="text-brand">Study Material.</span>
+            </h1>
+            <p class="text-lg md:text-xl mb-8 opacity-80 max-w-lg mx-auto">
+                Upload a document or enter a topic. Our AI generates an adaptive climb to the peak of knowledge.
+            </p>
+            
+            <div class="glass-brutal p-6 max-w-md mx-auto flex flex-col gap-4">
+                <input type="text" id="topicInput" placeholder="E.g., Cellular Respiration..." 
+                       class="w-full p-4 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-4 focus:ring-brand/50 font-bold placeholder-gray-500 dark:placeholder-gray-400">
+                
+                <div class="border-2 border-dashed border-gray-900 dark:border-white rounded-xl p-8 bg-white/30 dark:bg-slate-800/30 cursor-pointer hover:bg-white/50 transition">
+                    <i data-lucide="upload-cloud" class="mx-auto mb-2 w-8 h-8"></i>
+                    <p class="font-bold">Drop PDF or Image here</p>
+                </div>
+
+                <button onclick="startClimb()" class="bg-brand text-white font-black text-lg py-4 rounded-xl glass-brutal mt-2 hover:bg-indigo-600">
+                    Start the Ascent
+                </button>
+            </div>
+        </section>
+
+        <section id="view-ascent" class="w-full hidden grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="md:col-span-1 flex flex-col items-center glass-brutal p-6 h-full relative overflow-hidden">
+                <div class="flex gap-4 mb-8 w-full justify-around font-bold">
+                    <div class="flex items-center gap-1 text-red-500"><i data-lucide="heart"></i> <span id="hud-lives">3</span></div>
+                    <div class="flex items-center gap-1 text-accent"><i data-lucide="flame"></i> <span id="hud-streak">0</span></div>
+                </div>
+                
+                <div class="relative h-64 w-4 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div id="rope-progress" class="absolute bottom-0 w-full bg-brand rounded-full transition-all duration-500 ease-out" style="height: 0%;"></div>
+                </div>
+                <div class="mt-4 font-black text-sm">ELEVATION</div>
+            </div>
+
+            <div id="question-container" class="md:col-span-3 glass-brutal p-8 flex flex-col justify-center">
+                <div class="flex justify-between items-start mb-6">
+                    <h2 id="question-text" class="text-2xl font-black">Loading question...</h2>
+                    <button class="p-2 glass-brutal rounded-lg text-sm font-bold flex gap-1 items-center hover:bg-white/50">
+                        <i data-lucide="lightbulb" class="w-4 h-4"></i> Hint
+                    </button>
+                </div>
+                
+                <div id="options-grid" class="grid grid-cols-1 gap-4 mt-4">
+                    </div>
+            </div>
+        </section>
+
+        <section id="view-peak" class="w-full hidden text-center">
+            <i data-lucide="flag" class="w-20 h-20 mx-auto text-accent mb-4"></i>
+            <h1 class="text-5xl font-black mb-2">Peak Reached!</h1>
+            <p class="text-xl mb-8">You conquered the mountain.</p>
+            
+            <div class="glass-brutal p-8 max-w-2xl mx-auto mb-8">
+                <div class="grid grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <p class="text-sm font-bold opacity-70">FINAL SCORE</p>
+                        <p class="text-4xl font-black text-brand" id="final-score">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold opacity-70">LONGEST STREAK</p>
+                        <p class="text-4xl font-black text-accent" id="final-streak">0</p>
+                    </div>
+                </div>
+                
+                <div class="w-full h-32 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center font-bold opacity-80 border-2 border-dashed border-gray-400">
+                    [ Knowledge Heatmap Rendered Here ]
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="bg-[#0077b5] text-white font-black text-lg py-4 px-8 rounded-xl glass-brutal flex items-center gap-2 mx-auto">
+                <i data-lucide="linkedin"></i> Share to LinkedIn
+            </button>
+        </section>
+
+    </main>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- GLOBAL STATE ---
+        const gameState = {
+            lives: 3,
+            streak: 0,
+            maxStreak: 0,
+            score: 0,
+            currentQ: 0,
+            totalQs: 4,
+            theme: 'day'
+        };
+
+        // Mock AI-Generated Data (We will replace this with Gemini backend soon!)
+        const quizData = [
+            { q: "What design pattern uses soft blur and transparency?", options: ["Neumorphism", "Glassmorphism", "Brutalism", "Material"], answer: 1 },
+            { q: "Which tool is used for complex React animations?", options: ["Tailwind", "Zustand", "Framer Motion", "Lucide"], answer: 2 },
+            { q: "What does SPA stand for?", options: ["Single Page App", "State Process Action", "Style Properties Area", "Super Powered AI"], answer: 0 },
+            { q: "Which AI model powers ClimbUp?", options: ["ChatGPT", "Gemini AI", "Claude", "Llama"], answer: 1 }
+        ];
+
+        // --- DOM ELEMENTS ---
+        const views = {
+            auth: document.getElementById('view-auth'),
+            basecamp: document.getElementById('view-basecamp'),
+            ascent: document.getElementById('view-ascent'),
+            peak: document.getElementById('view-peak')
+        };
+        const ui = {
+            lives: document.getElementById('hud-lives'),
+            streak: document.getElementById('hud-streak'),
+            rope: document.getElementById('rope-progress'),
+            qText: document.getElementById('question-text'),
+            optGrid: document.getElementById('options-grid'),
+            qContainer: document.getElementById('question-container')
+        };
+
+        let currentAuthMode = 'login'; // 'login' or 'signup'
+
+        // --- VIEW CONTROLLER ---
+        function switchView(viewName) {
+            Object.values(views).forEach(v => {
+                v.classList.add('hidden');
+                v.classList.remove('pop-in'); 
+            });
+            views[viewName].classList.remove('hidden');
+            void views[viewName].offsetWidth; // trigger reflow
+            views[viewName].classList.add('pop-in');
+        }
+
+        // --- AUTH LOGIC ---
+        function toggleAuth(mode) {
+            currentAuthMode = mode;
+            const nameInput = document.getElementById('auth-name');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const tabLogin = document.getElementById('tab-login');
+            const tabSignup = document.getElementById('tab-signup');
+
+            if (mode === 'signup') {
+                nameInput.classList.remove('hidden');
+                nameInput.required = true;
+                submitBtn.innerText = 'Create Account';
+                
+                tabSignup.classList.add('bg-white', 'dark:bg-slate-600', 'shadow', 'text-brand');
+                tabSignup.classList.remove('text-gray-500');
+                tabLogin.classList.remove('bg-white', 'dark:bg-slate-600', 'shadow', 'text-brand');
+                tabLogin.classList.add('text-gray-500');
+            } else {
+                nameInput.classList.add('hidden');
+                nameInput.required = false;
+                submitBtn.innerText = 'Login';
+                
+                tabLogin.classList.add('bg-white', 'dark:bg-slate-600', 'shadow', 'text-brand');
+                tabLogin.classList.remove('text-gray-500');
+                tabSignup.classList.remove('bg-white', 'dark:bg-slate-600', 'shadow', 'text-brand');
+                tabSignup.classList.add('text-gray-500');
+            }
+        }
+
+        async function handleAuth(event) {
+            event.preventDefault(); 
+            
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const name = document.getElementById('auth-name').value;
+
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = 'Loading...';
+
+            try {
+                // TODO: Replace this timeout with real fetch() to your backend
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                console.log(`Simulating ${currentAuthMode} for: ${email}`);
+                
+                // If successful, go to the main app!
+                switchView('basecamp');
+
+            } catch (error) {
+                alert("Authentication failed. Please try again.");
+                submitBtn.innerText = originalText;
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function startClimb() {
+            switchView('ascent');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (gameState.currentQ >= gameState.totalQs) {
+                return reachPeak();
+            }
+            if (gameState.lives <= 0) {
+                alert("You fell off the mountain! Restarting...");
+                return location.reload();
+            }
+
+            const current = quizData[gameState.currentQ];
+            ui.qText.innerText = current.q;
+            ui.optGrid.innerHTML = '';
+
+            current.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-4 rounded-xl glass-brutal font-bold text-lg hover:bg-white/40 dark:hover:bg-slate-600/40 transition-colors';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                ui.optGrid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, btnElement) {
+            const correctIndex = quizData[gameState.currentQ].answer;
+            Array.from(ui.optGrid.children).forEach(b => b.disabled = true);
+
+            if (selectedIndex === correctIndex) {
+                btnElement.style.backgroundColor = '#4ade80'; // green
+                gameState.score += 100 + (gameState.streak * 10);
+                gameState.streak++;
+                if(gameState.streak > gameState.maxStreak) gameState.maxStreak = gameState.streak;
+                
+                const progress = ((gameState.currentQ + 1) / gameState.totalQs) * 100;
+                ui.rope.style.height = `${progress}%`;
+                
+                setTimeout(() => {
+                    gameState.currentQ++;
+                    updateHUD();
+                    loadQuestion();
+                }, 1000);
+            } else {
+                btnElement.style.backgroundColor = '#f87171'; // red
+                ui.qContainer.classList.remove('pop-in');
+                ui.qContainer.classList.add('shake');
+                gameState.streak = 0;
+                gameState.lives--;
+                
+                setTimeout(() => {
+                    ui.qContainer.classList.remove('shake');
+                    updateHUD();
+                    loadQuestion(); 
+                }, 600);
+            }
+            updateHUD();
+        }
+
+        function updateHUD() {
+            ui.lives.innerText = gameState.lives;
+            ui.streak.innerText = gameState.streak;
+        }
+
+        function reachPeak() {
+            switchView('peak');
+            document.getElementById('final-score').innerText = gameState.score;
+            document.getElementById('final-streak').innerText = gameState.maxStreak;
+            
+            var duration = 3 * 1000;
+            var end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#6366f1', '#fbbf24'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#6366f1', '#fbbf24'] });
+                if (Date.now() < end) { requestAnimationFrame(frame); }
+            }());
+        }
+
+        // --- THEME TOGGLE (Day/Night Climb) ---
+        const themeBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const html = document.documentElement;
+        
+        themeBtn.addEventListener('click', () => {
+            if (html.classList.contains('light')) {
+                html.classList.replace('light', 'dark');
+                document.body.classList.replace('bg-day-climb', 'bg-night-climb');
+                themeIcon.setAttribute('data-lucide', 'sun');
+            } else {
+                html.classList.replace('dark', 'light');
+                document.body.classList.replace('bg-night-climb', 'bg-day-climb');
+                themeIcon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        });
+
+        // Initialize by showing Auth view
+        switchView('auth');
+    </script>
+</body>
+</html>

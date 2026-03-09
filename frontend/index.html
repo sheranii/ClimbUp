@@ -115,6 +115,21 @@
                 <input type="text" id="topicInput" placeholder="E.g., Cellular Respiration..." 
                        class="w-full p-4 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-4 focus:ring-brand/50 font-bold placeholder-gray-500 dark:placeholder-gray-400">
                 
+                <div class="flex gap-4">
+                    <select id="questionCount" class="flex-1 p-4 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-4 focus:ring-brand/50 font-bold text-gray-700 dark:text-gray-300">
+                        <option value="2">2 Questions</option>
+                        <option value="4" selected>4 Questions</option>
+                        <option value="6">6 Questions</option>
+                        <option value="10">10 Questions</option>
+                    </select>
+
+                    <select id="difficultyLevel" class="flex-1 p-4 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-4 focus:ring-brand/50 font-bold text-gray-700 dark:text-gray-300">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                
                 <div class="border-2 border-dashed border-gray-900 dark:border-white rounded-xl p-8 bg-white/30 dark:bg-slate-800/30 cursor-pointer hover:bg-white/50 transition">
                     <i data-lucide="upload-cloud" class="mx-auto mb-2 w-8 h-8"></i>
                     <p class="font-bold">Drop PDF or Image here</p>
@@ -196,13 +211,8 @@
             theme: 'day'
         };
 
-        // Mock AI-Generated Data (We will replace this with Gemini backend soon!)
-        const quizData = [
-            { q: "What design pattern uses soft blur and transparency?", options: ["Neumorphism", "Glassmorphism", "Brutalism", "Material"], answer: 1 },
-            { q: "Which tool is used for complex React animations?", options: ["Tailwind", "Zustand", "Framer Motion", "Lucide"], answer: 2 },
-            { q: "What does SPA stand for?", options: ["Single Page App", "State Process Action", "Style Properties Area", "Super Powered AI"], answer: 0 },
-            { q: "Which AI model powers ClimbUp?", options: ["ChatGPT", "Gemini AI", "Claude", "Llama"], answer: 1 }
-        ];
+        // Dynamically fetched AI-Generated Data
+        let quizData = [];
 
         // --- DOM ELEMENTS ---
         const views = {
@@ -274,23 +284,84 @@
             submitBtn.innerText = 'Loading...';
 
             try {
-                // TODO: Replace this timeout with real fetch() to your backend
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                console.log(`Simulating ${currentAuthMode} for: ${email}`);
+                const endpoint = currentAuthMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
+                const bodyData = currentAuthMode === 'signup' ? { name, email, password } : { email, password };
+
+                const response = await fetch(`http://localhost:5001${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Authentication failed');
+                }
+
+                console.log(`Successfully authenticated: ${data.name}`);
+                
+                // Store token in localStorage for future requests
+                localStorage.setItem('climbUpToken', data.token);
+                localStorage.setItem('climbUpUser', JSON.stringify({ id: data._id, name: data.name, email: data.email }));
                 
                 // If successful, go to the main app!
                 switchView('basecamp');
 
             } catch (error) {
-                alert("Authentication failed. Please try again.");
+                alert(error.message);
                 submitBtn.innerText = originalText;
             }
         }
 
         // --- GAME LOGIC ---
-        function startClimb() {
-            switchView('ascent');
-            loadQuestion();
+        async function startClimb() {
+            const topic = document.getElementById('topicInput').value;
+            const count = document.getElementById('questionCount').value;
+            const difficulty = document.getElementById('difficultyLevel').value;
+
+            if (!topic) {
+                alert("Please enter a topic first!");
+                return;
+            }
+
+            const startBtn = document.querySelector('button[onclick="startClimb()"]');
+            const originalText = startBtn.innerText;
+            startBtn.innerText = 'Generating Ascent...';
+            startBtn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:5001/api/quiz/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic, count: parseInt(count), difficulty })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to generate quiz');
+                }
+
+                quizData = data.quizData;
+
+                // Configure new game based on dynamic data
+                gameState.lives = 3;
+                gameState.streak = 0;
+                gameState.score = 0;
+                gameState.currentQ = 0;
+                gameState.totalQs = quizData.length;
+                ui.rope.style.height = '0%';
+                updateHUD();
+
+                switchView('ascent');
+                loadQuestion();
+            } catch (error) {
+                alert("Error: " + error.message);
+            } finally {
+                startBtn.innerText = originalText;
+                startBtn.disabled = false;
+            }
         }
 
         function loadQuestion() {

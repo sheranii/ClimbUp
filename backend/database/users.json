@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": "1773047676096",
+    "name": "Shreya Sharma",
+    "email": "shreya@gmail.com",
+    "password": "$2b$10$vlVNLTDi2L0xaZRc9vN5E.8/ljqDywcPs7DlaCXhRS/nwr26UmruS",
+    "climbCoins": 0,
+    "highestStreak": 0,
+    "createdAt": "2026-03-09T09:14:36.096Z"
+  }
+]

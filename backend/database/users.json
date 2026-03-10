@@ -30,9 +30,11 @@
     "password": "$2b$10$5zqQfkHggbaljN0JrjsObuyPHoj.1vsANdZkvmQE/N5ijsYT7pL7G",
     "climbCoins": 0,
     "highestStreak": 0,
-    "totalScore": 0,
-    "matchesPlayed": 0,
-    "topicsChosen": [],
+    "totalScore": 420,
+    "matchesPlayed": 1,
+    "topicsChosen": [
+      "Automobile"
+    ],
     "createdAt": "2026-03-10T14:36:41.635Z"
   }
 ]

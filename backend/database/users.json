@@ -7,5 +7,14 @@
     "climbCoins": 0,
     "highestStreak": 0,
     "createdAt": "2026-03-09T09:14:36.096Z"
+  },
+  {
+    "id": "1773114056455",
+    "name": "sheranii",
+    "email": "sheranigoyal@gmail.com",
+    "password": "$2b$10$7ksTUdc1/BXbR8c7.fAeMuIHs3MSLEbpHBqIvieDZzq.UzOmQfYZm",
+    "climbCoins": 0,
+    "highestStreak": 0,
+    "createdAt": "2026-03-10T03:40:56.455Z"
   }
 ]

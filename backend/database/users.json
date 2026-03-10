@@ -21,7 +21,16 @@
     "password": "$2b$10$7ksTUdc1/BXbR8c7.fAeMuIHs3MSLEbpHBqIvieDZzq.UzOmQfYZm",
     "climbCoins": 0,
     "highestStreak": 0,
-    "createdAt": "2026-03-10T03:40:56.455Z"
+    "createdAt": "2026-03-10T03:40:56.455Z",
+    "totalScore": 3620,
+    "matchesPlayed": 5,
+    "topicsChosen": [
+      "dsa",
+      "linux",
+      "science",
+      "two pointers",
+      "computer networks"
+    ]
   },
   {
     "id": "1773153401635",

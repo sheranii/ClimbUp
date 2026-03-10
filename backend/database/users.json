@@ -22,5 +22,17 @@
     "climbCoins": 0,
     "highestStreak": 0,
     "createdAt": "2026-03-10T03:40:56.455Z"
+  },
+  {
+    "id": "1773153401635",
+    "name": "Ramesh Yadav",
+    "email": "rameshyadav123@gmail.com",
+    "password": "$2b$10$5zqQfkHggbaljN0JrjsObuyPHoj.1vsANdZkvmQE/N5ijsYT7pL7G",
+    "climbCoins": 0,
+    "highestStreak": 0,
+    "totalScore": 0,
+    "matchesPlayed": 0,
+    "topicsChosen": [],
+    "createdAt": "2026-03-10T14:36:41.635Z"
   }
 ]

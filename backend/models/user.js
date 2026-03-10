@@ -45,6 +45,9 @@ const User = {
             password: userData.password, // This will be hashed before getting here
             climbCoins: 0,
             highestStreak: 0,
+            totalScore: 0,
+            matchesPlayed: 0,
+            topicsChosen: [],
             createdAt: new Date().toISOString()
         };
         
@@ -52,6 +55,33 @@ const User = {
         await this.saveAll(users); // Save the updated list back to the file
         
         return newUser;
+    },
+
+    // 6. Update user's game stats
+    async updateStats(userId, score, topic) {
+        const users = await this.getAll();
+        const userIndex = users.findIndex(user => user.id === userId);
+
+        if (userIndex === -1) {
+            throw new Error('User not found');
+        }
+
+        // Update stats
+        users[userIndex].totalScore = (users[userIndex].totalScore || 0) + score;
+        users[userIndex].matchesPlayed = (users[userIndex].matchesPlayed || 0) + 1;
+        
+        // Initialize topicsChosen if it doesn't exist yet
+        if (!users[userIndex].topicsChosen) {
+             users[userIndex].topicsChosen = [];
+        }
+
+        // Add the topic if it was provided
+        if (topic) {
+            users[userIndex].topicsChosen.push(topic);
+        }
+
+        await this.saveAll(users);
+        return users[userIndex];
     }
 };
 

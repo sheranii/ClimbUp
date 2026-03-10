@@ -66,12 +66,23 @@
 
     <header class="p-6 flex justify-between items-center w-full max-w-4xl mx-auto">
         <div class="flex items-center gap-2 font-black text-2xl tracking-tighter">
+            <button id="back-btn" onclick="goBack()" class="hidden glass-brutal p-2 mr-2 rounded-full cursor-pointer hover:bg-white/50">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
             <i data-lucide="mountain" class="text-brand w-8 h-8"></i>
             ClimbUp
         </div>
-        <button id="themeToggle" class="glass-brutal p-2 rounded-full cursor-pointer">
-            <i data-lucide="moon" id="themeIcon"></i>
-        </button>
+        <div class="flex gap-2">
+            <button id="dashboard-btn" onclick="loadDashboard()" class="hidden glass-brutal p-2 rounded-full cursor-pointer hover:bg-white/50 text-brand">
+                <i data-lucide="user" class="w-5 h-5"></i>
+            </button>
+            <button id="logout-btn" onclick="logout()" class="hidden glass-brutal p-2 rounded-full cursor-pointer hover:bg-white/50 text-red-500">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+            </button>
+            <button id="themeToggle" class="glass-brutal p-2 rounded-full cursor-pointer">
+                <i data-lucide="moon" id="themeIcon"></i>
+            </button>
+        </div>
     </header>
 
     <main class="flex-grow flex items-center justify-center p-4 w-full max-w-4xl mx-auto">
@@ -186,8 +197,42 @@
                 </div>
             </div>
 
-            <button onclick="location.reload()" class="bg-[#0077b5] text-white font-black text-lg py-4 px-8 rounded-xl glass-brutal flex items-center gap-2 mx-auto">
-                <i data-lucide="linkedin"></i> Share to LinkedIn
+            <button onclick="switchView('basecamp')" class="bg-[#0077b5] text-white font-black text-lg py-4 px-8 rounded-xl glass-brutal flex items-center gap-2 mx-auto mt-4 hover:bg-indigo-600">
+                <i data-lucide="home"></i> Back to Basecamp
+            </button>
+        </section>
+
+        <section id="view-dashboard" class="w-full hidden text-center pop-in">
+            <i data-lucide="user" class="w-20 h-20 mx-auto text-brand mb-4"></i>
+            <h1 class="text-5xl font-black mb-2">Your Dashboard</h1>
+            <p class="text-xl mb-8" id="dash-email">Loading...</p>
+            
+            <div class="glass-brutal p-8 max-w-2xl mx-auto mb-8 text-left">
+                <h2 class="text-3xl font-bold mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2 flex items-center gap-2">
+                    <i data-lucide="bar-chart-2" class="w-6 h-6 text-brand"></i> Statistics
+                </h2>
+                
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white/50 dark:bg-slate-800/50 p-4 rounded-xl border border-gray-200 dark:border-slate-700">
+                        <p class="text-sm font-bold opacity-70">TOTAL SCORE</p>
+                        <p class="text-3xl font-black text-brand" id="dash-score">0</p>
+                    </div>
+                    <div class="bg-white/50 dark:bg-slate-800/50 p-4 rounded-xl border border-gray-200 dark:border-slate-700">
+                        <p class="text-sm font-bold opacity-70">MATCHES PLAYED</p>
+                        <p class="text-3xl font-black text-accent" id="dash-matches">0</p>
+                    </div>
+                </div>
+
+                <h2 class="text-3xl font-bold mb-4 border-b-2 border-gray-300 dark:border-gray-600 pb-2 flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-6 h-6 text-brand"></i> Topics Conquered
+                </h2>
+                <div id="dash-topics" class="flex flex-wrap gap-2 min-h-[50px]">
+                    <!-- Topics will be injected here -->
+                </div>
+            </div>
+
+            <button onclick="switchView('basecamp')" class="bg-brand text-white font-black text-lg py-4 px-8 rounded-xl glass-brutal flex items-center gap-2 mx-auto mt-4 hover:bg-indigo-600">
+                <i data-lucide="mountain"></i> Start a Climb
             </button>
         </section>
 
@@ -210,13 +255,18 @@
 
         // Dynamically fetched AI-Generated Data
         let quizData = [];
+        
+        // Navigation History
+        let viewHistory = [];
+        let currentViewId = 'auth';
 
         // --- DOM ELEMENTS ---
         const views = {
             auth: document.getElementById('view-auth'),
             basecamp: document.getElementById('view-basecamp'),
             ascent: document.getElementById('view-ascent'),
-            peak: document.getElementById('view-peak')
+            peak: document.getElementById('view-peak'),
+            dashboard: document.getElementById('view-dashboard')
         };
         const ui = {
             lives: document.getElementById('hud-lives'),
@@ -230,7 +280,11 @@
         let currentAuthMode = 'login'; // 'login' or 'signup'
 
         // --- VIEW CONTROLLER ---
-        function switchView(viewName) {
+        function switchView(viewName, isBack = false) {
+            if (!isBack && currentViewId && currentViewId !== viewName && currentViewId !== 'auth') {
+                viewHistory.push(currentViewId);
+            }
+            
             Object.values(views).forEach(v => {
                 v.classList.add('hidden');
                 v.classList.remove('pop-in'); 
@@ -238,6 +292,99 @@
             views[viewName].classList.remove('hidden');
             void views[viewName].offsetWidth; // trigger reflow
             views[viewName].classList.add('pop-in');
+            
+            currentViewId = viewName;
+
+            // Handle back button, logout button, and dashboard button visibility
+            const backBtn = document.getElementById('back-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const dashBtn = document.getElementById('dashboard-btn');
+            
+            if (viewName === 'auth') {
+                backBtn.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+                dashBtn.classList.add('hidden');
+            } else {
+                logoutBtn.classList.remove('hidden');
+                dashBtn.classList.remove('hidden');
+                if (viewHistory.length === 0) {
+                    backBtn.classList.add('hidden');
+                } else {
+                    backBtn.classList.remove('hidden');
+                }
+            }
+        }
+
+        function goBack() {
+            if (viewHistory.length > 0) {
+                const prevView = viewHistory.pop();
+                switchView(prevView, true);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('climbUpToken');
+            localStorage.removeItem('climbUpUser');
+            viewHistory = [];
+            currentViewId = null;
+            document.getElementById('auth-email').value = '';
+            document.getElementById('auth-password').value = '';
+            switchView('auth');
+        }
+
+        // --- DASHBOARD LOGIC ---
+        async function loadDashboard() {
+            try {
+                const userStr = localStorage.getItem('climbUpUser');
+                if (!userStr) {
+                    alert("Please log in first!");
+                    return switchView('auth');
+                }
+
+                const user = JSON.parse(userStr);
+                
+                // Show loading state
+                switchView('dashboard');
+                document.getElementById('dash-email').innerText = `Loading data for ${user.email}...`;
+                document.getElementById('dash-score').innerText = "...";
+                document.getElementById('dash-matches').innerText = "...";
+                document.getElementById('dash-topics').innerHTML = "";
+
+                // Fetch latest stats
+                const response = await fetch(`http://localhost:5001/api/stats/${user.id}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to fetch stats');
+                }
+
+                // Populate UI
+                document.querySelector('#view-dashboard h1').innerText = `Welcome, ${data.name}!`;
+                document.getElementById('dash-email').innerText = data.email;
+                document.getElementById('dash-score').innerText = data.totalScore;
+                document.getElementById('dash-matches').innerText = data.matchesPlayed;
+
+                const topicsContainer = document.getElementById('dash-topics');
+                topicsContainer.innerHTML = ''; // Clear previous
+
+                if (data.topicsChosen && data.topicsChosen.length > 0) {
+                    // Create a unique set of topics, and take the last 15 to avoid clutter
+                    const uniqueTopics = [...new Set(data.topicsChosen)].slice(-15);
+                    
+                    uniqueTopics.forEach(topic => {
+                        const badge = document.createElement('span');
+                        badge.className = 'px-3 py-1 bg-brand/20 dark:bg-brand/40 text-brand-700 dark:text-brand-300 rounded-full font-bold text-sm border-2 border-brand/30 dark:border-brand/50';
+                        badge.innerText = topic;
+                        topicsContainer.appendChild(badge);
+                    });
+                } else {
+                    topicsContainer.innerHTML = '<span class="text-gray-500 italic">No topics conquered yet. Start a climb!</span>';
+                }
+
+            } catch (error) {
+                console.error("Error loading dashboard:", error);
+                document.getElementById('dash-email').innerText = "Failed to load dashboard data.";
+            }
         }
 
         // --- AUTH LOGIC ---
@@ -366,8 +513,9 @@
                 return reachPeak();
             }
             if (gameState.lives <= 0) {
-                alert("You fell off the mountain! Restarting...");
-                return location.reload();
+                alert("You fell off the mountain! Returning to Basecamp...");
+                viewHistory = []; // Reset history
+                return switchView('basecamp');
             }
 
             const current = quizData[gameState.currentQ];
@@ -422,7 +570,7 @@
             ui.streak.innerText = gameState.streak;
         }
 
-        function reachPeak() {
+        async function reachPeak() {
             switchView('peak');
             document.getElementById('final-score').innerText = gameState.score;
             document.getElementById('final-streak').innerText = gameState.maxStreak;
@@ -434,6 +582,28 @@
                 confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#6366f1', '#fbbf24'] });
                 if (Date.now() < end) { requestAnimationFrame(frame); }
             }());
+
+            // --- Save Stats to Backend ---
+            try {
+                const userStr = localStorage.getItem('climbUpUser');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    const topic = document.getElementById('topicInput').value;
+
+                    await fetch('http://localhost:5001/api/stats/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: user.id,
+                            score: gameState.score,
+                            topic: topic
+                        })
+                    });
+                    console.log("Stats saved successfully!");
+                }
+            } catch (error) {
+                console.error("Failed to save stats:", error);
+            }
         }
 
         // --- THEME TOGGLE (Day/Night Climb) ---

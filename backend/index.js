@@ -6,6 +6,7 @@ const path = require('path');
 // Import our routes
 const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
+const statsRoutes = require('./routes/statsRoutes');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -25,6 +26,7 @@ app.use(express.static(path.join(__dirname, '../frontend')))
 // Mount the auth routes. All endpoints in authRoutes.js will be prefixed with /api/auth
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/stats', statsRoutes);
 
 // A simple test route to check if the server is running
 app.get('/', (req, res) => {

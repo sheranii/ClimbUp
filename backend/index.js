@@ -3,27 +3,29 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
 
-// Import our routes
+
 const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 
-// Load environment variables from .env file
+
 dotenv.config();
 
-// Initialize the Express application
+
 const app = express();
 
-// --- MIDDLEWARES ---
-// Allows our frontend (HTML/JS) to make requests to this backend
+
 app.use(cors());
-// Tells our server to understand JSON data sent in the body of requests
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, '../frontend')))
 
-// --- ROUTES ---
-// Mount the auth routes. All endpoints in authRoutes.js will be prefixed with /api/auth
+// Log incoming API requests to the terminal
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/stats', statsRoutes);
@@ -34,7 +36,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// --- START SERVER ---
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {

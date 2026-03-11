@@ -1,10 +1,8 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const dotenv = require('dotenv');
 
-// Load environment variables
 dotenv.config();
 
-// Check if the API key exists
 if (!process.env.GEMINI_API_KEY) {
     console.error("CRITICAL ERROR: GEMINI_API_KEY is missing in the .env file.");
     process.exit(1);

@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
-// Import the logic from our controller
-const { updateUserStats, getUserStats } = require('../controller/statsController');
+// Import controller functions
+const { updateUserStats, getUserStats, deleteUserStats } = require('../controller/statsController');
 
-// Route for updating stats: POST http://localhost:5001/api/stats/update
+// POST → update stats
 router.post('/update', updateUserStats);
 
-// Route for getting stats: GET http://localhost:5001/api/stats/:userId
+// GET → fetch stats
 router.get('/:userId', getUserStats);
+
+// DELETE → remove user stats
+router.delete('/:userId', deleteUserStats);
 
 module.exports = router;

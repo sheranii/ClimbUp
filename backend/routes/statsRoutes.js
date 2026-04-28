@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+// Import the logic from our controller
 const { updateUserStats, getUserStats } = require('../controller/statsController');
 
 // Route for updating stats: POST http://localhost:5001/api/stats/update

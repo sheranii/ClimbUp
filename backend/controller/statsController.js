@@ -1,51 +1,53 @@
-const User = require('../models/user');
+const User = require('../models/User');
 
-// @desc    Update user's game stats
-// @route   POST /api/stats/update
+// UPDATE STATS
 const updateUserStats = async (req, res) => {
     try {
         const { userId, score, topic } = req.body;
 
-        if (!userId) {
-            return res.status(400).json({ message: 'User ID is required' });
+        if (!userId || score === undefined) {
+            return res.status(400).json({ message: 'User ID and score are required' });
         }
 
-        if (score === undefined) {
-            return res.status(400).json({ message: 'Score is required' });
+        // Find user
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // We allow topic to be optional
+        // Update stats
+        user.totalScore += score;
+        user.matchesPlayed += 1;
 
-        const updatedUser = await User.updateStats(userId, score, topic);
+        if (topic) {
+            user.topicsChosen.push(topic);
+        }
+
+        // Save updated user
+        await user.save();
 
         res.status(200).json({
             message: 'Stats updated successfully',
             user: {
-                id: updatedUser.id,
-                name: updatedUser.name,
-                totalScore: updatedUser.totalScore,
-                matchesPlayed: updatedUser.matchesPlayed,
-                topicsChosen: updatedUser.topicsChosen
+                id: user._id,
+                name: user.name,
+                totalScore: user.totalScore,
+                matchesPlayed: user.matchesPlayed,
+                topicsChosen: user.topicsChosen
             }
         });
+
     } catch (error) {
-        console.error("Error updating stats:", error.message);
-        if (error.message === 'User not found') {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.status(500).json({ message: 'Server error while updating stats' });
+        console.error("STATS UPDATE ERROR:", error);
+        res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Get user's game stats
-// @route   GET /api/stats/:userId
+// GET STATS
 const getUserStats = async (req, res) => {
     try {
         const { userId } = req.params;
-
-        if (!userId) {
-             return res.status(400).json({ message: 'User ID is required' });
-        }
 
         const user = await User.findById(userId);
 
@@ -54,17 +56,18 @@ const getUserStats = async (req, res) => {
         }
 
         res.status(200).json({
-            id: user.id,
+            id: user._id,
             name: user.name,
             email: user.email,
-            totalScore: user.totalScore || 0,
-            matchesPlayed: user.matchesPlayed || 0,
-            topicsChosen: user.topicsChosen || [],
+            totalScore: user.totalScore,
+            matchesPlayed: user.matchesPlayed,
+            topicsChosen: user.topicsChosen,
             createdAt: user.createdAt
         });
+
     } catch (error) {
-        console.error("Error fetching stats:", error.message);
-        res.status(500).json({ message: 'Server error while fetching stats' });
+        console.error("GET STATS ERROR:", error);
+        res.status(500).json({ message: error.message });
     }
 };
 

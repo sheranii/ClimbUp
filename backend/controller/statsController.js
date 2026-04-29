@@ -71,6 +71,46 @@ const getUserStats = async (req, res) => {
     }
 };
 
+// UPDATE USER BY ID (any field)
+const updateUserById = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const allowedFields = ['name', 'email', 'totalScore', 'matchesPlayed', 'climbCoins', 'highestStreak', 'topicsChosen'];
+        const updateData = {};
+
+        allowedFields.forEach((field) => {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
+            }
+        });
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ message: 'No valid fields provided to update' });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'User updated successfully',
+            user: updatedUser
+        });
+
+    } catch (error) {
+        console.error("UPDATE BY ID ERROR:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // DELETE USER STATS
 const deleteUserStats = async (req, res) => {
     try {
@@ -95,6 +135,7 @@ const deleteUserStats = async (req, res) => {
 
 module.exports = {
     updateUserStats,
+    updateUserById,
     getUserStats,
     deleteUserStats
 };

@@ -13,6 +13,7 @@ const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 const roomRoutes = require('./routes/roomRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Initialize Express
 const app = express();
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/room', roomRoutes);
+app.use('/api/users', userRoutes);
 
 // Serve frontend
 app.get('/', (req, res) => {

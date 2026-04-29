@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClimbUp | Quiz Room</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { brand: '#6366f1', accent: '#fbbf24' } } }
+        }
+    </script>
+    <style>
+        .glass-brutal {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 3px solid #111827;
+            box-shadow: 6px 6px 0px #111827;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+        }
+        .dark .glass-brutal {
+            background: rgba(30, 41, 59, 0.6);
+            border-color: #f8fafc;
+            box-shadow: 6px 6px 0px #f8fafc;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(-8px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+        body { transition: background-color 0.5s ease; }
+        .bg-day-climb { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
+        .bg-night-climb { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        #timer-ring {
+            transition: stroke-dashoffset 1s linear;
+        }
+    </style>
+</head>
+<body class="bg-day-climb text-gray-900 dark:text-gray-100 min-h-screen flex flex-col font-sans">
+
+    <header class="p-6 flex justify-between items-center w-full max-w-4xl mx-auto">
+        <div class="flex items-center gap-2 font-black text-2xl tracking-tighter">
+            <i data-lucide="mountain" class="text-brand w-8 h-8"></i>
+            ClimbUp
+        </div>
+        <div id="timer-display" class="hidden items-center gap-2 font-black text-xl text-brand">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+            <span id="timer-text">00:00</span>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4 w-full max-w-4xl mx-auto">
+
+        <!-- VIEW: Enter Details -->
+        <section id="view-enter" class="w-full max-w-md mx-auto text-center pop-in">
+            <i data-lucide="book-open" class="w-16 h-16 mx-auto text-brand mb-4"></i>
+            <h1 class="text-4xl font-black mb-2">Quiz Room</h1>
+            <p class="text-lg mb-2 opacity-80">You've been invited to take a quiz!</p>
+            <div id="room-info-banner" class="glass-brutal p-4 mb-6 text-left text-sm font-bold space-y-1"></div>
+            <div class="glass-brutal p-8 flex flex-col gap-4">
+                <input type="text" id="student-name" placeholder="Your Full Name" required
+                    class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                <input type="email" id="student-email" placeholder="Your Email Address" required
+                    class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                <button onclick="joinRoom()" class="bg-brand text-white font-black text-lg py-3 rounded-xl glass-brutal mt-2 hover:bg-indigo-600">
+                    Enter Quiz Room
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW: Lobby (waiting for teacher to start) -->
+        <section id="view-lobby" class="hidden w-full max-w-md mx-auto text-center pop-in">
+            <div class="glass-brutal p-10 flex flex-col items-center gap-6">
+                <div class="w-16 h-16 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
+                <h2 class="text-3xl font-black">Waiting for Teacher...</h2>
+                <p class="opacity-70 font-bold">The quiz will begin once the teacher starts it.</p>
+                <div class="bg-brand/10 rounded-xl p-4 w-full text-left">
+                    <p class="text-sm font-bold opacity-60">ROOM CODE</p>
+                    <p class="text-2xl font-black text-brand" id="lobby-room-code"></p>
+                </div>
+                <p class="text-sm opacity-50">You're connected! Sit tight 🧗</p>
+            </div>
+        </section>
+
+        <!-- VIEW: Quiz Questions -->
+        <section id="view-quiz" class="w-full hidden">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Sidebar -->
+                <div class="md:col-span-1 flex flex-col items-center glass-brutal p-6">
+                    <div class="text-sm font-bold opacity-60 mb-1">QUESTION</div>
+                    <div class="text-4xl font-black text-brand mb-4">
+                        <span id="q-current">1</span>/<span id="q-total">5</span>
+                    </div>
+                    <div class="relative h-48 w-4 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div id="q-progress-bar" class="absolute bottom-0 w-full bg-brand rounded-full transition-all duration-500" style="height:0%"></div>
+                    </div>
+                    <div class="mt-4 font-black text-sm">PROGRESS</div>
+                </div>
+
+                <!-- Question -->
+                <div id="quiz-question-card" class="md:col-span-3 glass-brutal p-8 flex flex-col justify-center">
+                    <h2 id="quiz-q-text" class="text-2xl font-black mb-6">Loading...</h2>
+                    <div id="quiz-options-grid" class="grid grid-cols-1 gap-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: Results -->
+        <section id="view-results" class="hidden w-full max-w-2xl mx-auto text-center pop-in">
+            <i data-lucide="flag" class="w-20 h-20 mx-auto text-accent mb-4"></i>
+            <h1 class="text-5xl font-black mb-2">Quiz Complete!</h1>
+            <p class="text-xl mb-8">Your results have been submitted.</p>
+
+            <div class="glass-brutal p-8 mb-6">
+                <div class="grid grid-cols-3 gap-6 mb-4">
+                    <div>
+                        <p class="text-sm font-bold opacity-70">SCORE</p>
+                        <p class="text-4xl font-black text-brand" id="res-score">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold opacity-70">CORRECT</p>
+                        <p class="text-4xl font-black text-green-500" id="res-correct">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold opacity-70">TIME</p>
+                        <p class="text-4xl font-black text-accent" id="res-time">0s</p>
+                    </div>
+                </div>
+            </div>
+            <p class="opacity-60 font-bold">You can close this tab now. Great work! 🎉</p>
+        </section>
+
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        lucide.createIcons();
+
+        const API = 'http://localhost:3000';
+        const params = new URLSearchParams(window.location.search);
+        const ROOM_CODE = params.get('room');
+
+        let roomData = null;
+        let quizQuestions = [];
+        let currentQ = 0;
+        let score = 0;
+        let correctCount = 0;
+        let startTime = null;
+        let studentInfo = { name: '', email: '' };
+        let socket = null;
+
+        // Views
+        const views = {
+            enter: document.getElementById('view-enter'),
+            lobby: document.getElementById('view-lobby'),
+            quiz: document.getElementById('view-quiz'),
+            results: document.getElementById('view-results')
+        };
+
+        function showView(name) {
+            Object.values(views).forEach(v => v.classList.add('hidden'));
+            views[name].classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        // Load room info on page load
+        async function loadRoom() {
+            if (!ROOM_CODE) {
+                document.body.innerHTML = '<div class="flex items-center justify-center min-h-screen text-2xl font-black">❌ No room code provided.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API}/api/room/${ROOM_CODE}`);
+                if (!res.ok) throw new Error('Room not found');
+                roomData = await res.json();
+                quizQuestions = roomData.quizData;
+
+                document.getElementById('room-info-banner').innerHTML = `
+                    <div class="flex gap-6 flex-wrap">
+                        <span>📚 <b>${roomData.subject}</b></span>
+                        <span>🔖 ${roomData.topic}</span>
+                        <span>❓ ${roomData.numQuestions} Questions</span>
+                        <span>⚡ ${roomData.difficulty.charAt(0).toUpperCase() + roomData.difficulty.slice(1)}</span>
+                        <span>👨‍🏫 By ${roomData.createdByName}</span>
+                    </div>`;
+            } catch (err) {
+                document.body.innerHTML = `<div class="flex items-center justify-center min-h-screen text-2xl font-black text-red-500">❌ ${err.message}</div>`;
+            }
+        }
+
+        function joinRoom() {
+            const name = document.getElementById('student-name').value.trim();
+            const email = document.getElementById('student-email').value.trim();
+            if (!name || !email) { alert('Please enter your name and email!'); return; }
+
+            studentInfo = { name, email };
+
+            // Connect socket
+            socket = io(API);
+            socket.emit('join-room', { roomCode: ROOM_CODE, userName: name, role: 'student' });
+
+            // Listen for teacher to start quiz
+            socket.on('quiz-started', () => {
+                startQuiz();
+            });
+
+            // Listen for score updates (for leaderboard if needed)
+            socket.on('score-update', () => {});
+
+            document.getElementById('lobby-room-code').textContent = ROOM_CODE;
+            showView('lobby');
+        }
+
+        function startQuiz() {
+            currentQ = 0;
+            score = 0;
+            correctCount = 0;
+            startTime = Date.now();
+            document.getElementById('q-total').textContent = quizQuestions.length;
+            document.getElementById('timer-display').classList.remove('hidden');
+            document.getElementById('timer-display').classList.add('flex');
+            startTimer();
+            showView('quiz');
+            loadQuestion();
+        }
+
+        // Timer
+        let timerInterval = null;
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+                const s = String(elapsed % 60).padStart(2, '0');
+                document.getElementById('timer-text').textContent = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if (currentQ >= quizQuestions.length) { finishQuiz(); return; }
+
+            const q = quizQuestions[currentQ];
+            document.getElementById('quiz-q-text').textContent = q.q;
+            document.getElementById('q-current').textContent = currentQ + 1;
+
+            const progress = (currentQ / quizQuestions.length) * 100;
+            document.getElementById('q-progress-bar').style.height = `${progress}%`;
+
+            const grid = document.getElementById('quiz-options-grid');
+            grid.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-4 rounded-xl glass-brutal font-bold text-lg hover:bg-white/40 dark:hover:bg-slate-600/40 transition-colors';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(idx, btn, q.answer, grid);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, btnEl, correct, grid) {
+            Array.from(grid.children).forEach(b => b.disabled = true);
+
+            if (selected === correct) {
+                btnEl.style.backgroundColor = '#4ade80';
+                score += 100;
+                correctCount++;
+            } else {
+                btnEl.style.backgroundColor = '#f87171';
+                grid.children[correct].style.backgroundColor = '#4ade80';
+                const card = document.getElementById('quiz-question-card');
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 500);
+            }
+
+            setTimeout(() => {
+                currentQ++;
+                loadQuestion();
+            }, 1000);
+        }
+
+        async function finishQuiz() {
+            clearInterval(timerInterval);
+            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+            // Submit score
+            try {
+                await fetch(`${API}/api/room/${ROOM_CODE}/score`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentName: studentInfo.name,
+                        email: studentInfo.email,
+                        score,
+                        timeTaken
+                    })
+                });
+
+                // Emit to socket room
+                if (socket) {
+                    socket.emit('score-submitted', {
+                        roomCode: ROOM_CODE,
+                        studentName: studentInfo.name,
+                        score,
+                        timeTaken
+                    });
+                }
+            } catch (err) {
+                console.error('Score submit error:', err);
+            }
+
+            document.getElementById('res-score').textContent = score;
+            document.getElementById('res-correct').textContent = `${correctCount}/${quizQuestions.length}`;
+            document.getElementById('res-time').textContent = `${timeTaken}s`;
+
+            showView('results');
+            confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 }, colors: ['#6366f1', '#fbbf24'] });
+        }
+
+        loadRoom();
+    </script>
+</body>
+</html>

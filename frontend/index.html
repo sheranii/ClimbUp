@@ -95,18 +95,25 @@
             <p class="text-lg mb-8 opacity-80">Sign in to sync your progress and climb.</p>
             
             <div class="glass-brutal p-8 max-w-sm mx-auto flex flex-col gap-4">
+
+                <!-- Role Toggle: Student / Teacher -->
+                <div class="flex bg-gray-200 dark:bg-slate-700 rounded-lg p-1 font-bold text-sm mb-1">
+                    <button id="role-student" onclick="setRole('student')" class="flex-1 py-2 rounded-md bg-white dark:bg-slate-600 shadow text-brand transition-all">🎒 Student</button>
+                    <button id="role-teacher" onclick="setRole('teacher')" class="flex-1 py-2 rounded-md text-gray-500 hover:text-gray-800 dark:hover:text-white transition-all">👨‍🏫 Teacher</button>
+                </div>
+
+                <!-- Login / Sign Up Tabs -->
                 <div class="flex bg-gray-200 dark:bg-slate-700 rounded-lg p-1 mb-2 font-bold text-sm">
                     <button id="tab-login" onclick="toggleAuth('login')" class="flex-1 py-2 rounded-md bg-white dark:bg-slate-600 shadow text-brand transition-all">Login</button>
                     <button id="tab-signup" onclick="toggleAuth('signup')" class="flex-1 py-2 rounded-md text-gray-500 hover:text-gray-800 dark:hover:text-white transition-all">Sign Up</button>
                 </div>
 
                 <form id="auth-form" onsubmit="handleAuth(event)" class="flex flex-col gap-4">
+                    <!-- Teacher Only: Employee ID -->
+                    <input type="text" id="auth-empid" placeholder="Employee ID (e.g. EMP001)" class="hidden w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
                     <input type="text" id="auth-name" placeholder="Full Name" class="hidden w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
-                    
                     <input type="email" id="auth-email" placeholder="Email Address" required class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
-                    
                     <input type="password" id="auth-password" placeholder="Password" required class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
-                    
                     <button type="submit" id="auth-submit-btn" class="bg-brand text-white font-black text-lg py-3 rounded-xl glass-brutal mt-2 hover:bg-indigo-600">
                         Login
                     </button>
@@ -234,7 +241,141 @@
             </button>
         </section>
 
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- VIEW: TEACHER DASHBOARD                      -->
+        <!-- ═══════════════════════════════════════════ -->
+        <section id="view-teacher-dashboard" class="w-full hidden pop-in">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-4xl font-black">Teacher Dashboard</h1>
+                    <p class="opacity-70 font-bold" id="teacher-dash-info">Loading...</p>
+                </div>
+                <button onclick="switchView('create-room')" class="bg-brand text-white font-black py-3 px-6 rounded-xl glass-brutal flex items-center gap-2 hover:bg-indigo-600">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i> Create Quiz Room
+                </button>
+            </div>
+
+            <div id="teacher-rooms-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="glass-brutal p-6 text-center opacity-60">
+                    <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2"></i>
+                    <p class="font-bold">No quiz rooms yet. Create your first one!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- VIEW: CREATE QUIZ ROOM                       -->
+        <!-- ═══════════════════════════════════════════ -->
+        <section id="view-create-room" class="w-full hidden pop-in">
+            <div class="max-w-lg mx-auto">
+                <h1 class="text-4xl font-black mb-2 text-center">Create Quiz Room</h1>
+                <p class="text-center opacity-70 mb-8 font-bold">Fill in the details to generate a shareable quiz</p>
+
+                <div class="glass-brutal p-8 flex flex-col gap-4">
+                    <div>
+                        <label class="block text-sm font-black mb-1 opacity-70">SUBJECT</label>
+                        <input type="text" id="room-subject" placeholder="e.g. Physics, Mathematics" 
+                            class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-black mb-1 opacity-70">TOPIC</label>
+                        <input type="text" id="room-topic" placeholder="e.g. Newton's Laws of Motion"
+                            class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-black mb-1 opacity-70">QUESTIONS</label>
+                            <select id="room-num-questions" class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                                <option value="2">2 Questions</option>
+                                <option value="4" selected>4 Questions</option>
+                                <option value="6">6 Questions</option>
+                                <option value="10">10 Questions</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-black mb-1 opacity-70">DIFFICULTY</label>
+                            <select id="room-difficulty" class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                                <option value="easy">Easy</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="createQuizRoom()" id="create-room-btn" class="bg-brand text-white font-black text-lg py-3 rounded-xl glass-brutal mt-2 hover:bg-indigo-600 flex items-center justify-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5"></i> Generate Quiz Room
+                    </button>
+                </div>
+
+                <!-- Shareable Link Result -->
+                <div id="room-link-result" class="hidden mt-6 glass-brutal p-6">
+                    <p class="text-sm font-black opacity-60 mb-2">✅ ROOM CREATED! SHAREABLE LINK:</p>
+                    <div class="flex gap-2">
+                        <input id="room-link-input" type="text" readonly class="flex-1 p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/80 dark:bg-slate-800 font-bold text-sm">
+                        <button onclick="copyRoomLink()" class="glass-brutal px-4 py-2 font-black text-sm hover:bg-white/50 flex items-center gap-1">
+                            <i data-lucide="copy" class="w-4 h-4"></i> Copy
+                        </button>
+                    </div>
+                    <p class="text-xs opacity-50 mt-2 font-bold">Share this link with your students. They can open it and wait for you to start.</p>
+                    <div class="mt-4 flex gap-3">
+                        <button onclick="openRoomLobby()" class="bg-green-500 text-white font-black py-2 px-4 rounded-xl glass-brutal text-sm hover:bg-green-600 flex items-center gap-2">
+                            <i data-lucide="users" class="w-4 h-4"></i> Open Room Lobby
+                        </button>
+                        <button onclick="switchView('teacher-dashboard'); loadTeacherRooms();" class="glass-brutal py-2 px-4 font-black text-sm hover:bg-white/50">
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- VIEW: TEACHER ROOM LOBBY                     -->
+        <!-- ═══════════════════════════════════════════ -->
+        <section id="view-room-lobby" class="w-full hidden pop-in">
+            <div class="max-w-2xl mx-auto">
+                <div class="text-center mb-6">
+                    <h1 class="text-4xl font-black">Room Lobby</h1>
+                    <p class="font-bold opacity-70 mt-1">Waiting for students to join...</p>
+                    <div class="inline-block mt-3 bg-brand/10 rounded-xl px-6 py-3">
+                        <p class="text-sm font-black opacity-60">ROOM CODE</p>
+                        <p class="text-3xl font-black text-brand" id="lobby-room-code-teacher"></p>
+                    </div>
+                </div>
+
+                <div class="glass-brutal p-6 mb-4">
+                    <h2 class="text-xl font-black mb-4 flex items-center gap-2">
+                        <i data-lucide="users" class="w-5 h-5 text-brand"></i>
+                        Students Joined (<span id="student-count">0</span>)
+                    </h2>
+                    <div id="students-joined-list" class="space-y-2 min-h-[60px]">
+                        <p class="text-sm opacity-50 font-bold italic">No students yet — share the link!</p>
+                    </div>
+                </div>
+
+                <button onclick="teacherStartQuiz()" class="w-full bg-green-500 text-white font-black text-xl py-4 rounded-xl glass-brutal hover:bg-green-600 flex items-center justify-center gap-3">
+                    <i data-lucide="play-circle" class="w-6 h-6"></i> Start Quiz for All Students
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- VIEW: TEACHER ROOM SCORES (Leaderboard)      -->
+        <!-- ═══════════════════════════════════════════ -->
+        <section id="view-room-scores" class="w-full hidden pop-in">
+            <div class="max-w-2xl mx-auto">
+                <h1 class="text-4xl font-black mb-2 text-center">Leaderboard</h1>
+                <p class="text-center opacity-70 font-bold mb-6" id="scores-room-info"></p>
+                <div id="scores-list" class="space-y-3">
+                    <div class="glass-brutal p-4 text-center opacity-60 font-bold">Loading scores...</div>
+                </div>
+                <button onclick="switchView('teacher-dashboard'); loadTeacherRooms();" class="mt-6 glass-brutal py-3 px-6 font-black hover:bg-white/50 flex items-center gap-2 mx-auto">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+                </button>
+            </div>
+        </section>
+
     </main>
+
 
     <script>
         // Initialize Icons
@@ -264,7 +405,11 @@
             basecamp: document.getElementById('view-basecamp'),
             ascent: document.getElementById('view-ascent'),
             peak: document.getElementById('view-peak'),
-            dashboard: document.getElementById('view-dashboard')
+            dashboard: document.getElementById('view-dashboard'),
+            'teacher-dashboard': document.getElementById('view-teacher-dashboard'),
+            'create-room': document.getElementById('view-create-room'),
+            'room-lobby': document.getElementById('view-room-lobby'),
+            'room-scores': document.getElementById('view-room-scores')
         };
         const ui = {
             lives: document.getElementById('hud-lives'),
@@ -276,28 +421,31 @@
         };
 
         let currentAuthMode = 'login'; // 'login' or 'signup'
+        let currentRole = 'student';   // 'student' or 'teacher'
+        let teacherSocket = null;       // Socket for teacher lobby
+        let currentRoomCode = null;     // Active room code for teacher lobby
 
         // --- VIEW CONTROLLER ---
         function switchView(viewName, isBack = false) {
             if (!isBack && currentViewId && currentViewId !== viewName && currentViewId !== 'auth') {
                 viewHistory.push(currentViewId);
             }
-            
+
             Object.values(views).forEach(v => {
                 v.classList.add('hidden');
-                v.classList.remove('pop-in'); 
+                v.classList.remove('pop-in');
             });
             views[viewName].classList.remove('hidden');
-            void views[viewName].offsetWidth; // trigger reflow
+            void views[viewName].offsetWidth;
             views[viewName].classList.add('pop-in');
-            
-            currentViewId = viewName;
 
-            // Handle back button, logout button, and dashboard button visibility
+            currentViewId = viewName;
+            lucide.createIcons();
+
             const backBtn = document.getElementById('back-btn');
             const logoutBtn = document.getElementById('logout-btn');
             const dashBtn = document.getElementById('dashboard-btn');
-            
+
             if (viewName === 'auth') {
                 backBtn.classList.add('hidden');
                 logoutBtn.classList.add('hidden');
@@ -305,11 +453,30 @@
             } else {
                 logoutBtn.classList.remove('hidden');
                 dashBtn.classList.remove('hidden');
-                if (viewHistory.length === 0) {
-                    backBtn.classList.add('hidden');
-                } else {
-                    backBtn.classList.remove('hidden');
+                if (viewHistory.length === 0) { backBtn.classList.add('hidden'); }
+                else { backBtn.classList.remove('hidden'); }
+            }
+        }
+
+        // --- ROLE TOGGLE ---
+        function setRole(role) {
+            currentRole = role;
+            const roleStu = document.getElementById('role-student');
+            const roleTeach = document.getElementById('role-teacher');
+            const empIdField = document.getElementById('auth-empid');
+
+            if (role === 'teacher') {
+                roleStu.className = 'flex-1 py-2 rounded-md text-gray-500 hover:text-gray-800 dark:hover:text-white transition-all';
+                roleTeach.className = 'flex-1 py-2 rounded-md bg-white dark:bg-slate-600 shadow text-brand transition-all';
+                if (currentAuthMode === 'signup') {
+                    empIdField.classList.remove('hidden');
+                    empIdField.required = true;
                 }
+            } else {
+                roleTeach.className = 'flex-1 py-2 rounded-md text-gray-500 hover:text-gray-800 dark:hover:text-white transition-all';
+                roleStu.className = 'flex-1 py-2 rounded-md bg-white dark:bg-slate-600 shadow text-brand transition-all';
+                empIdField.classList.add('hidden');
+                empIdField.required = false;
             }
         }
 
@@ -334,41 +501,35 @@
         async function loadDashboard() {
             try {
                 const userStr = localStorage.getItem('climbUpUser');
-                if (!userStr) {
-                    alert("Please log in first!");
-                    return switchView('auth');
+                if (!userStr) { alert('Please log in first!'); return switchView('auth'); }
+                const user = JSON.parse(userStr);
+
+                // If teacher, go to teacher dashboard
+                if (user.role === 'teacher') {
+                    document.getElementById('teacher-dash-info').innerText = `${user.name} · ${user.empId || ''}`;
+                    loadTeacherRooms();
+                    return switchView('teacher-dashboard');
                 }
 
-                const user = JSON.parse(userStr);
-                
-                // Show loading state
                 switchView('dashboard');
                 document.getElementById('dash-email').innerText = `Loading data for ${user.email}...`;
-                document.getElementById('dash-score').innerText = "...";
-                document.getElementById('dash-matches').innerText = "...";
-                document.getElementById('dash-topics').innerHTML = "";
+                document.getElementById('dash-score').innerText = '...';
+                document.getElementById('dash-matches').innerText = '...';
+                document.getElementById('dash-topics').innerHTML = '';
 
-                // Fetch latest stats
-                const response = await fetch(`http://localhost:5001/api/stats/${user.id}`);
+                const response = await fetch(`http://localhost:3000/api/stats/${user.id}`);
                 const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Failed to fetch stats');
 
-                if (!response.ok) {
-                    throw new Error(data.message || 'Failed to fetch stats');
-                }
-
-                // Populate UI
                 document.querySelector('#view-dashboard h1').innerText = `Welcome, ${data.name}!`;
                 document.getElementById('dash-email').innerText = data.email;
                 document.getElementById('dash-score').innerText = data.totalScore;
                 document.getElementById('dash-matches').innerText = data.matchesPlayed;
 
                 const topicsContainer = document.getElementById('dash-topics');
-                topicsContainer.innerHTML = ''; // Clear previous
-
+                topicsContainer.innerHTML = '';
                 if (data.topicsChosen && data.topicsChosen.length > 0) {
-                    // Create a unique set of topics, and take the last 15 to avoid clutter
                     const uniqueTopics = [...new Set(data.topicsChosen)].slice(-15);
-                    
                     uniqueTopics.forEach(topic => {
                         const badge = document.createElement('span');
                         badge.className = 'px-3 py-1 bg-brand/20 dark:bg-brand/40 text-brand-700 dark:text-brand-300 rounded-full font-bold text-sm border-2 border-brand/30 dark:border-brand/50';
@@ -378,10 +539,9 @@
                 } else {
                     topicsContainer.innerHTML = '<span class="text-gray-500 italic">No topics conquered yet. Start a climb!</span>';
                 }
-
             } catch (error) {
-                console.error("Error loading dashboard:", error);
-                document.getElementById('dash-email').innerText = "Failed to load dashboard data.";
+                console.error('Error loading dashboard:', error);
+                document.getElementById('dash-email').innerText = 'Failed to load dashboard data.';
             }
         }
 
@@ -389,6 +549,7 @@
         function toggleAuth(mode) {
             currentAuthMode = mode;
             const nameInput = document.getElementById('auth-name');
+            const empIdInput = document.getElementById('auth-empid');
             const submitBtn = document.getElementById('auth-submit-btn');
             const tabLogin = document.getElementById('tab-login');
             const tabSignup = document.getElementById('tab-signup');
@@ -397,7 +558,10 @@
                 nameInput.classList.remove('hidden');
                 nameInput.required = true;
                 submitBtn.innerText = 'Create Account';
-                
+                if (currentRole === 'teacher') {
+                    empIdInput.classList.remove('hidden');
+                    empIdInput.required = true;
+                }
                 tabSignup.classList.add('bg-white', 'dark:bg-slate-600', 'shadow', 'text-brand');
                 tabSignup.classList.remove('text-gray-500');
                 tabLogin.classList.remove('bg-white', 'dark:bg-slate-600', 'shadow', 'text-brand');
@@ -405,8 +569,9 @@
             } else {
                 nameInput.classList.add('hidden');
                 nameInput.required = false;
+                empIdInput.classList.add('hidden');
+                empIdInput.required = false;
                 submitBtn.innerText = 'Login';
-                
                 tabLogin.classList.add('bg-white', 'dark:bg-slate-600', 'shadow', 'text-brand');
                 tabLogin.classList.remove('text-gray-500');
                 tabSignup.classList.remove('bg-white', 'dark:bg-slate-600', 'shadow', 'text-brand');
@@ -415,40 +580,55 @@
         }
 
         async function handleAuth(event) {
-            event.preventDefault(); 
-            
+            event.preventDefault();
+
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             const name = document.getElementById('auth-name').value;
+            const empId = document.getElementById('auth-empid').value;
 
             const submitBtn = document.getElementById('auth-submit-btn');
             const originalText = submitBtn.innerText;
             submitBtn.innerText = 'Loading...';
 
             try {
-                const endpoint = currentAuthMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
-                const bodyData = currentAuthMode === 'signup' ? { name, email, password } : { email, password };
+                let endpoint, bodyData;
 
-                const response = await fetch(`http://localhost:5001${endpoint}`, {
+                if (currentRole === 'teacher') {
+                    endpoint = currentAuthMode === 'signup' ? '/api/auth/teacher/register' : '/api/auth/teacher/login';
+                    bodyData = currentAuthMode === 'signup'
+                        ? { empId, name, email, password }
+                        : { email, password };
+                } else {
+                    endpoint = currentAuthMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
+                    bodyData = currentAuthMode === 'signup' ? { name, email, password } : { email, password };
+                }
+
+                const response = await fetch(`http://localhost:3000${endpoint}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bodyData)
                 });
 
                 const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Authentication failed');
 
-                if (!response.ok) {
-                    throw new Error(data.message || 'Authentication failed');
-                }
-
-                console.log(`Successfully authenticated: ${data.name}`);
-                
-                // Store token in localStorage for future requests
                 localStorage.setItem('climbUpToken', data.token);
-                localStorage.setItem('climbUpUser', JSON.stringify({ id: data._id, name: data.name, email: data.email }));
-                
-                // If successful, go to the main app!
-                switchView('basecamp');
+                localStorage.setItem('climbUpUser', JSON.stringify({
+                    id: data._id,
+                    name: data.name,
+                    email: data.email,
+                    role: data.role,
+                    empId: data.empId || null
+                }));
+
+                if (data.role === 'teacher') {
+                    document.getElementById('teacher-dash-info').innerText = `${data.name} · ${data.empId}`;
+                    loadTeacherRooms();
+                    switchView('teacher-dashboard');
+                } else {
+                    switchView('basecamp');
+                }
 
             } catch (error) {
                 alert(error.message);
@@ -473,7 +653,7 @@
             startBtn.disabled = true;
 
             try {
-                const response = await fetch('http://localhost:5001/api/quiz/generate', {
+                const response = await fetch('http://localhost:3000/api/quiz/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ topic, count: parseInt(count), difficulty })
@@ -588,7 +768,7 @@
                     const user = JSON.parse(userStr);
                     const topic = document.getElementById('topicInput').value;
 
-                    await fetch('http://localhost:5001/api/stats/update', {
+                    await fetch('http://localhost:3000/api/stats/update', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -601,6 +781,165 @@
                 }
             } catch (error) {
                 console.error("Failed to save stats:", error);
+            }
+        }
+
+        // --- TEACHER FUNCTIONS ---
+        async function loadTeacherRooms() {
+            const userStr = localStorage.getItem('climbUpUser');
+            if (!userStr) return;
+            const user = JSON.parse(userStr);
+
+            try {
+                const res = await fetch(`http://localhost:3000/api/room/teacher/${user.id}`);
+                const data = await res.json();
+                const container = document.getElementById('teacher-rooms-list');
+
+                if (!data.rooms || data.rooms.length === 0) {
+                    container.innerHTML = '<div class="glass-brutal p-6 text-center opacity-60"><p class="font-bold">No quiz rooms yet. Create your first one!</p></div>';
+                    return;
+                }
+
+                container.innerHTML = data.rooms.map(room => `
+                    <div class="glass-brutal p-5 flex flex-col gap-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-black text-lg">${room.subject} — ${room.topic}</h3>
+                                <p class="text-sm opacity-60 font-bold">${room.difficulty.toUpperCase()} · ${room.numQuestions} Qs · ${new Date(room.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            <span class="bg-brand/20 text-brand font-black px-3 py-1 rounded-lg text-sm">${room.roomCode}</span>
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="openLobbyForRoom('${room.roomCode}')"
+                                class="flex-1 glass-brutal py-2 px-3 text-sm font-black hover:bg-white/50 flex items-center justify-center gap-1">
+                                🚀 Open Lobby
+                            </button>
+                            <button onclick="viewRoomScores('${room.roomCode}', '${room.subject} - ${room.topic}')"
+                                class="flex-1 glass-brutal py-2 px-3 text-sm font-black hover:bg-white/50 flex items-center justify-center gap-1">
+                                📊 Scores
+                            </button>
+                        </div>
+                    </div>`).join('');
+            } catch (err) {
+                console.error('Load rooms error:', err);
+            }
+        }
+
+        async function createQuizRoom() {
+            const subject = document.getElementById('room-subject').value.trim();
+            const topic = document.getElementById('room-topic').value.trim();
+            const numQuestions = parseInt(document.getElementById('room-num-questions').value);
+            const difficulty = document.getElementById('room-difficulty').value;
+
+            if (!subject || !topic) { alert('Please fill in Subject and Topic!'); return; }
+
+            const userStr = localStorage.getItem('climbUpUser');
+            if (!userStr) return;
+            const user = JSON.parse(userStr);
+
+            const btn = document.getElementById('create-room-btn');
+            btn.innerText = 'Generating Quiz...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('http://localhost:3000/api/room/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subject, topic, numQuestions, difficulty, teacherId: user.id, teacherName: user.name })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+
+                currentRoomCode = data.roomCode;
+                const link = `${window.location.origin}/quiz-room.html?room=${data.roomCode}`;
+                document.getElementById('room-link-input').value = link;
+                document.getElementById('room-link-result').classList.remove('hidden');
+            } catch (err) {
+                alert('Error creating room: ' + err.message);
+            } finally {
+                btn.innerText = 'Generate Quiz Room';
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        function copyRoomLink() {
+            const input = document.getElementById('room-link-input');
+            navigator.clipboard.writeText(input.value).then(() => alert('Link copied to clipboard! ✅'));
+        }
+
+        function openRoomLobby() {
+            openLobbyForRoom(currentRoomCode);
+        }
+
+        function openLobbyForRoom(roomCode) {
+            currentRoomCode = roomCode;
+            document.getElementById('lobby-room-code-teacher').textContent = roomCode;
+            document.getElementById('student-count').textContent = '0';
+            document.getElementById('students-joined-list').innerHTML = '<p class="text-sm opacity-50 font-bold italic">No students yet — share the link!</p>';
+            switchView('room-lobby');
+
+            // Connect teacher socket
+            if (teacherSocket) teacherSocket.disconnect();
+            teacherSocket = io('http://localhost:3000');
+            teacherSocket.emit('join-room', { roomCode, userName: 'Teacher', role: 'teacher' });
+
+            // Listen for students joining
+            teacherSocket.on('student-joined', ({ userName }) => {
+                const list = document.getElementById('students-joined-list');
+                const existing = list.querySelector('.italic');
+                if (existing) existing.remove();
+
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-2 p-2 bg-green-100 dark:bg-green-900/30 rounded-lg font-bold text-sm';
+                item.innerHTML = `<span class="w-2 h-2 bg-green-500 rounded-full"></span> ${userName} joined`;
+                list.appendChild(item);
+
+                const count = list.querySelectorAll('.bg-green-100, .dark\\:bg-green-900\/30').length;
+                document.getElementById('student-count').textContent = count;
+            });
+
+            // Listen for score updates
+            teacherSocket.on('score-update', ({ studentName, score, timeTaken }) => {
+                console.log(`Score: ${studentName} — ${score} pts in ${timeTaken}s`);
+            });
+        }
+
+        function teacherStartQuiz() {
+            if (!teacherSocket || !currentRoomCode) return;
+            teacherSocket.emit('start-quiz', { roomCode: currentRoomCode });
+            alert('Quiz started! Students will now see the questions.');
+        }
+
+        async function viewRoomScores(roomCode, label) {
+            document.getElementById('scores-room-info').textContent = label;
+            document.getElementById('scores-list').innerHTML = '<div class="glass-brutal p-4 text-center opacity-60 font-bold">Loading scores...</div>';
+            switchView('room-scores');
+
+            try {
+                const res = await fetch(`http://localhost:3000/api/room/${roomCode}/scores`);
+                const data = await res.json();
+                const list = document.getElementById('scores-list');
+
+                if (!data.scores || data.scores.length === 0) {
+                    list.innerHTML = '<div class="glass-brutal p-6 text-center opacity-60 font-bold">No students have submitted scores yet.</div>';
+                    return;
+                }
+
+                list.innerHTML = data.scores.map((s, i) => `
+                    <div class="glass-brutal p-4 flex items-center gap-4">
+                        <div class="text-2xl font-black w-10 text-center ${ i === 0 ? 'text-yellow-500' : i === 1 ? 'text-gray-400' : i === 2 ? 'text-amber-700' : 'text-brand'}">${ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i+1}</div>
+                        <div class="flex-1">
+                            <p class="font-black">${s.studentName}</p>
+                            <p class="text-sm opacity-60 font-bold">${s.email}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black text-xl text-brand">${s.score} pts</p>
+                            <p class="text-sm opacity-60 font-bold">${s.timeTaken}s</p>
+                        </div>
+                    </div>`).join('');
+            } catch (err) {
+                document.getElementById('scores-list').innerHTML = '<div class="glass-brutal p-4 text-center text-red-500 font-bold">Failed to load scores.</div>';
             }
         }
 
@@ -625,5 +964,6 @@
         // Initialize by showing Auth view
         switchView('auth');
     </script>
+    <script src="/socket.io/socket.io.js"></script>
 </body>
 </html>

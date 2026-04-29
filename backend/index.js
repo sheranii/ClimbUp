@@ -2,44 +2,92 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 
-// Import our routes
+// Load environment variables FIRST
+dotenv.config();
+
+// Import routes
 const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const statsRoutes = require('./routes/statsRoutes');
+const roomRoutes = require('./routes/roomRoutes');
 
-// Load environment variables from .env file
-dotenv.config();
-
-// Initialize the Express application
+// Initialize Express
 const app = express();
+const httpServer = http.createServer(app);
+
+// Initialize Socket.io
+const io = new Server(httpServer, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
+});
 
 // --- MIDDLEWARES ---
-// Allows our frontend (HTML/JS) to make requests to this backend
 app.use(cors());
-// Tells our server to understand JSON data sent in the body of requests
 app.use(express.json());
-
-app.use(express.static(path.join(__dirname, '../frontend')))
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // --- ROUTES ---
-// Mount the auth routes. All endpoints in authRoutes.js will be prefixed with /api/auth
 app.use('/api/auth', authRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/room', roomRoutes);
 
-// A simple test routae to check if the server is running
+// Serve frontend
 app.get('/', (req, res) => {
-    // res.send('ClimbUp API is running smoothly...');
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// --- START SERVER ---
-const PORT = process.env.PORT || 5001;
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Serve quiz room page
+app.get('/quiz-room', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/quiz-room.html'));
 });
 
-const connectDB = require("./config/db");
+// --- SOCKET.IO EVENTS ---
+io.on('connection', (socket) => {
+    console.log(`Socket connected: ${socket.id}`);
+
+    // Student or teacher joins a quiz room
+    socket.on('join-room', ({ roomCode, userName, role }) => {
+        socket.join(roomCode);
+        console.log(`${role} "${userName}" joined room ${roomCode}`);
+
+        if (role === 'student') {
+            // Notify the teacher (others in the room)
+            socket.to(roomCode).emit('student-joined', { userName, socketId: socket.id });
+        }
+    });
+
+    // Teacher starts the quiz — broadcast to all students in the room
+    socket.on('start-quiz', ({ roomCode }) => {
+        console.log(`Quiz started in room ${roomCode}`);
+        io.to(roomCode).emit('quiz-started', { roomCode });
+    });
+
+    // Student submits their score — notify teacher's room
+    socket.on('score-submitted', ({ roomCode, studentName, score, timeTaken }) => {
+        io.to(roomCode).emit('score-update', { studentName, score, timeTaken });
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`Socket disconnected: ${socket.id}`);
+    });
+});
+
+const { errorMiddleware } = require('./middlewares/errorMiddleware');
+
+app.use(errorMiddleware);
+
+// --- START SERVER ---
+const PORT = process.env.PORT || 5000;
+
+const connectDB = require('./config/db');
 connectDB();
+
+httpServer.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

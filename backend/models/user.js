@@ -16,6 +16,11 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    role: {
+      type: String,
+      default: "student",
+    },
+
     // Your game stats (KEEP THESE 🔥)
     climbCoins: { type: Number, default: 0 },
     highestStreak: { type: Number, default: 0 },

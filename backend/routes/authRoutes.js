@@ -1,15 +1,21 @@
 const express = require('express');
 const router = express.Router();
 
-// Import the logic from our controller
-const { registerUser, loginUser, updateUserById } = require('../controller/authController');
+const {
+    registerUser,
+    loginUser,
+    registerTeacher,
+    loginTeacher,
+    updateUserById
+} = require('../controller/authController');
 
-// Route for User Registration: POST http://localhost:5000/api/auth/register
+// Student Routes
 router.post('/register', registerUser);
-
-// Route for User Login: POST http://localhost:5000/api/auth/login
 router.post('/login', loginUser);
-
 router.put('/update/:id', updateUserById);
+
+// Teacher Routes
+router.post('/teacher/register', registerTeacher);
+router.post('/teacher/login', loginTeacher);
 
 module.exports = router;

@@ -1,51 +1,30 @@
-const User = require('../models/User');
-const Teacher = require('../models/Teacher');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-
-// Generate JWT
-const generateToken = (id, role) => {
-    return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-        expiresIn: '30d'
-    });
-};
+const {
+    registerStudentService,
+    loginStudentService,
+    registerTeacherService,
+    loginTeacherService,
+    updateProfileByIdService
+} = require('../services/authServices');
 
 // ────────────────────────────────────────────
 // STUDENT REGISTER
 // ────────────────────────────────────────────
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { user, token } = await registerStudentService(req.body);
 
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: 'Please provide all fields' });
-        }
-
-        const userExists = await User.findOne({ email });
-        if (userExists) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = await User.create({
-            name,
-            email,
-            password: hashedPassword,
-            role: 'student'
-        });
+        res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
 
         res.status(201).json({
             _id: user._id,
             name: user.name,
             email: user.email,
             role: user.role,
-            token: generateToken(user._id, 'student')
+            token: token
         });
-
     } catch (error) {
         console.error("REGISTER ERROR:", error);
-        res.status(500).json({ message: error.message });
+        res.status(400).json({ message: error.message });
     }
 };
 
@@ -55,28 +34,20 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
+        const { user, token } = await loginStudentService(email, password);
 
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Please provide email and password' });
-        }
+        res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
 
-        const user = await User.findOne({ email });
-
-        if (user && (await bcrypt.compare(password, user.password))) {
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: 'student',
-                token: generateToken(user._id, 'student')
-            });
-        } else {
-            res.status(401).json({ message: 'Invalid email or password' });
-        }
-
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: 'student',
+            token: token
+        });
     } catch (error) {
         console.error("LOGIN ERROR:", error);
-        res.status(500).json({ message: error.message });
+        res.status(401).json({ message: error.message });
     }
 };
 
@@ -85,31 +56,9 @@ const loginUser = async (req, res) => {
 // ────────────────────────────────────────────
 const registerTeacher = async (req, res) => {
     try {
-        const { empId, name, email, password } = req.body;
+        const { teacher, token } = await registerTeacherService(req.body);
 
-        if (!empId || !name || !email || !password) {
-            return res.status(400).json({ message: 'Please provide Employee ID, name, email, and password' });
-        }
-
-        const teacherExistsByEmail = await Teacher.findOne({ email });
-        if (teacherExistsByEmail) {
-            return res.status(400).json({ message: 'Teacher with this email already exists' });
-        }
-
-        const teacherExistsByEmpId = await Teacher.findOne({ empId });
-        if (teacherExistsByEmpId) {
-            return res.status(400).json({ message: 'Employee ID already registered' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const teacher = await Teacher.create({
-            empId,
-            name,
-            email,
-            password: hashedPassword,
-            role: 'teacher'
-        });
+        res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
 
         res.status(201).json({
             _id: teacher._id,
@@ -117,12 +66,11 @@ const registerTeacher = async (req, res) => {
             name: teacher.name,
             email: teacher.email,
             role: 'teacher',
-            token: generateToken(teacher._id, 'teacher')
+            token: token
         });
-
     } catch (error) {
         console.error("TEACHER REGISTER ERROR:", error);
-        res.status(500).json({ message: error.message });
+        res.status(400).json({ message: error.message });
     }
 };
 
@@ -132,29 +80,21 @@ const registerTeacher = async (req, res) => {
 const loginTeacher = async (req, res) => {
     try {
         const { email, password } = req.body;
+        const { teacher, token } = await loginTeacherService(email, password);
 
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Please provide email and password' });
-        }
+        res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
 
-        const teacher = await Teacher.findOne({ email });
-
-        if (teacher && (await bcrypt.compare(password, teacher.password))) {
-            res.json({
-                _id: teacher._id,
-                empId: teacher.empId,
-                name: teacher.name,
-                email: teacher.email,
-                role: 'teacher',
-                token: generateToken(teacher._id, 'teacher')
-            });
-        } else {
-            res.status(401).json({ message: 'Invalid email or password' });
-        }
-
+        res.json({
+            _id: teacher._id,
+            empId: teacher.empId,
+            name: teacher.name,
+            email: teacher.email,
+            role: 'teacher',
+            token: token
+        });
     } catch (error) {
         console.error("TEACHER LOGIN ERROR:", error);
-        res.status(500).json({ message: error.message });
+        res.status(401).json({ message: error.message });
     }
 };
 
@@ -164,31 +104,17 @@ const loginTeacher = async (req, res) => {
 const updateUserById = async (req, res) => {
     try {
         const { id } = req.params;
-
-        const user = await User.findById(id);
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        user.name = req.body.name || user.name;
-        user.email = req.body.email || user.email;
-
-        if (req.body.password) {
-            user.password = await bcrypt.hash(req.body.password, 10);
-        }
-
-        const updatedUser = await user.save();
+        const { updatedUser, role } = await updateProfileByIdService(id, req.body);
 
         res.json({
             _id: updatedUser._id,
             name: updatedUser.name,
-            email: updatedUser.email
+            email: updatedUser.email,
+            role: role
         });
-
     } catch (error) {
         console.error("UPDATE ERROR:", error);
-        res.status(500).json({ message: error.message });
+        res.status(error.message === 'User not found' ? 404 : 500).json({ message: error.message });
     }
 };
 

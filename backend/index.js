@@ -4,6 +4,10 @@ const cors = require('cors');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const User = require('./models/User');
+const Teacher = require('./models/Teacher');
 
 // Load environment variables FIRST
 dotenv.config();
@@ -30,7 +34,12 @@ const io = new Server(httpServer, {
 // --- MIDDLEWARES ---
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../frontend')));
+
+// --- EJS SETUP ---
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // --- ROUTES ---
 app.use('/api/auth', authRoutes);
@@ -39,14 +48,23 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/room', roomRoutes);
 app.use('/api/users', userRoutes);
 
-// Serve frontend
+// Serve frontend (CSR)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// Serve quiz room page
-app.get('/quiz-room', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/quiz-room.html'));
+// Serve quiz room page (SSR for Invigilator)
+app.get('/quiz-room', async (req, res) => {
+    let user = null;
+    if (req.cookies.token) {
+        try {
+            const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+            user = await User.findById(decoded.id).select('-password') || await Teacher.findById(decoded.id).select('-password');
+        } catch (error) {
+            console.error("Token verification failed in SSR", error);
+        }
+    }
+    res.render('quiz-room', { user });
 });
 
 // --- SOCKET.IO EVENTS ---

@@ -1,4 +1,4 @@
-const { updateUserService } = require('../services/userServices');
+const { updateUserService, getAllUsersService } = require('../services/userServices');
 
 // PUT /api/users/:id
 const updateUser = async (req, res, next) => {
@@ -14,4 +14,20 @@ const updateUser = async (req, res, next) => {
     }
 };
 
-module.exports = { updateUser };
+// GET /api/users
+const getAllUsers = async (req, res, next) => {
+    try {
+        const users = await getAllUsersService();
+
+        res.status(200).json({
+            success: true,
+            count: users.length,
+            users: users,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { updateUser, getAllUsers };
+

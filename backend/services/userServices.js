@@ -29,6 +29,11 @@ const updateUserService = async (userId, data) => {
     return updatedUser;
 };
 
+const getAllUsersService = async () => {
+    return await User.find({}).select('-password');
+};
+
 module.exports = {
-    updateUserService
+    updateUserService,
+    getAllUsersService
 };

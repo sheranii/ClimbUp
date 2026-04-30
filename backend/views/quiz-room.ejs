@@ -4,52 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClimbUp | Quiz Room</title>
+    <meta name="description" content="Join a ClimbUp quiz room and test your knowledge in real-time.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: { colors: { brand: '#6366f1', accent: '#fbbf24' } } }
+            theme: {
+                extend: {
+                    colors: { brand: '#6366f1', 'brand-light': '#818cf8', accent: '#f59e0b' },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Space Grotesk', 'sans-serif'] }
+                }
+            }
         }
     </script>
     <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; transition: background-color 0.5s ease, color 0.3s ease; }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+
+        .bg-day-climb { background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 30%, #e0e7ff 60%, #fdf4ff 100%); }
+        .bg-night-climb { background: linear-gradient(135deg, #0c0a1d 0%, #1a1333 40%, #0f172a 100%); }
+
+        .orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+        .orb-1 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(99,102,241,0.3), transparent); top: -100px; left: -100px; animation: orbFloat1 25s ease-in-out infinite; }
+        .orb-2 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(139,92,246,0.25), transparent); top: 50%; right: -100px; animation: orbFloat2 30s ease-in-out infinite; }
+        .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(245,158,11,0.15), transparent); bottom: -50px; left: 30%; animation: orbFloat3 20s ease-in-out infinite; }
+        @keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(100px,50px) scale(1.1)} 66%{transform:translate(-50px,100px) scale(0.9)} }
+        @keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-80px,-60px) scale(1.15)} 66%{transform:translate(60px,40px) scale(0.85)} }
+        @keyframes orbFloat3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(80px,-80px) scale(1.2)} }
+
+        .mountain-bg { position: fixed; bottom: 0; left: 0; right: 0; height: 200px; z-index: 0; pointer-events: none; opacity: 0.05; }
+        .mountain-bg::before { content:''; position: absolute; bottom: 0; left: -10%; width: 60%; height: 100%; background: #6366f1; clip-path: polygon(0% 100%, 50% 0%, 100% 100%); }
+        .mountain-bg::after { content:''; position: absolute; bottom: 0; right: -5%; width: 50%; height: 80%; background: #8b5cf6; clip-path: polygon(0% 100%, 40% 10%, 70% 40%, 100% 0%, 100% 100%); }
+
         .glass-brutal {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 3px solid #111827;
-            box-shadow: 6px 6px 0px #111827;
-            border-radius: 16px;
-            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .dark .glass-brutal {
-            background: rgba(30, 41, 59, 0.6);
-            border-color: #f8fafc;
-            box-shadow: 6px 6px 0px #f8fafc;
-        }
-        @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(-8px); }
-        }
+        .dark .glass-brutal { background: rgba(30,41,59,0.45); border-color: rgba(148,163,184,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+        .glass-brutal:hover { box-shadow: 0 16px 48px rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.2); transform: translateY(-2px); }
+        .glass-brutal:active { transform: translateY(0) scale(0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+        @keyframes popIn { 0%{transform:scale(0.95) translateY(10px);opacity:0} 100%{transform:scale(1) translateY(0);opacity:1} }
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 50%{transform:translateX(8px)} 75%{transform:translateX(-8px)} }
         .shake { animation: shake 0.4s ease-in-out; }
-        body { transition: background-color 0.5s ease; }
-        .bg-day-climb { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
-        .bg-night-climb { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
-        #timer-ring {
-            transition: stroke-dashoffset 1s linear;
-        }
+
+        .text-gradient { background:linear-gradient(135deg,#6366f1,#8b5cf6,#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+        .input-premium { border: 1px solid rgba(99,102,241,0.15) !important; background: rgba(255,255,255,0.5) !important; border-radius: 14px !important; transition: all 0.3s ease; font-weight: 600; padding: 0.75rem 1rem; width: 100%; }
+        .input-premium:focus { border-color: rgba(99,102,241,0.5) !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.1), 0 2px 8px rgba(99,102,241,0.08) !important; outline: none; }
+        .dark .input-premium { background: rgba(30,41,59,0.5) !important; border-color: rgba(148,163,184,0.15) !important; }
+
+        .btn-glow { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 800; border: none; box-shadow: 0 4px 15px rgba(99,102,241,0.35); transition: all 0.3s ease; border-radius: 14px; cursor: pointer; }
+        .btn-glow:hover { box-shadow: 0 6px 25px rgba(99,102,241,0.5); transform: translateY(-2px); }
+        .btn-glow:active { transform: translateY(0) scale(0.98); }
+
+        #q-progress-bar { background: linear-gradient(to top, #6366f1, #8b5cf6) !important; box-shadow: 0 0 12px rgba(99,102,241,0.4); }
+        #timer-ring { transition: stroke-dashoffset 1s linear; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 3px; }
     </style>
 </head>
 <body class="bg-day-climb text-gray-900 dark:text-gray-100 min-h-screen flex flex-col font-sans">
 
-    <header class="p-6 flex justify-between items-center w-full max-w-4xl mx-auto">
+    <!-- Decorative Background Elements -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="mountain-bg"></div>
+
+    <header class="p-6 flex justify-between items-center w-full max-w-4xl mx-auto relative z-10">
         <div class="flex items-center gap-2 font-black text-2xl tracking-tighter">
             <i data-lucide="mountain" class="text-brand w-8 h-8"></i>
             ClimbUp
@@ -60,20 +96,20 @@
         </div>
     </header>
 
-    <main class="flex-grow flex items-center justify-center p-4 w-full max-w-4xl mx-auto">
+    <main class="flex-grow flex items-center justify-center p-4 w-full max-w-4xl mx-auto relative z-10">
 
         <!-- VIEW: Enter Details -->
         <section id="view-enter" class="w-full max-w-md mx-auto text-center pop-in">
             <i data-lucide="book-open" class="w-16 h-16 mx-auto text-brand mb-4"></i>
-            <h1 class="text-4xl font-black mb-2">Quiz Room</h1>
-            <p class="text-lg mb-2 opacity-80">You've been invited to take a quiz!</p>
+            <h1 class="text-4xl font-black mb-2">Quiz <span class="text-gradient">Room</span></h1>
+            <p class="text-lg mb-2 opacity-70">You've been invited to take a quiz!</p>
             <div id="room-info-banner" class="glass-brutal p-4 mb-6 text-left text-sm font-bold space-y-1"></div>
             <div class="glass-brutal p-8 flex flex-col gap-4">
                 <input type="text" id="student-name" placeholder="Your Full Name" required
-                    class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
+                    class="input-premium">
                 <input type="email" id="student-email" placeholder="Your Email Address" required
-                    class="w-full p-3 rounded-xl border-2 border-gray-900 dark:border-white bg-white/50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-brand font-bold">
-                <button onclick="joinRoom()" class="bg-brand text-white font-black text-lg py-3 rounded-xl glass-brutal mt-2 hover:bg-indigo-600">
+                    class="input-premium">
+                <button onclick="joinRoom()" class="btn-glow text-lg py-3 mt-2">
                     Enter Quiz Room
                 </button>
             </div>

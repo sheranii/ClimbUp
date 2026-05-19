@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -15,13 +14,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
     role: {
       type: String,
       default: "student",
     },
-
-    // Your game stats (KEEP THESE 🔥)
     climbCoins: { type: Number, default: 0 },
     highestStreak: { type: Number, default: 0 },
     totalScore: { type: Number, default: 0 },
@@ -30,6 +26,5 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 const User = mongoose.model("User", userSchema);
 module.exports= User;

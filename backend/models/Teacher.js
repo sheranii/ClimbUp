@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const teacherSchema = new mongoose.Schema(
   {
     empId: {
@@ -28,6 +27,5 @@ const teacherSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 const Teacher = mongoose.model("Teacher", teacherSchema);
 module.exports = Teacher;

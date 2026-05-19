@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const studentScoreSchema = new mongoose.Schema(
   {
     quizRoom: {
@@ -25,7 +24,7 @@ const studentScoreSchema = new mongoose.Schema(
       default: 0,
     },
     timeTaken: {
-      type: Number, // in seconds
+      type: Number, 
       default: 0,
     },
     submittedAt: {
@@ -35,6 +34,5 @@ const studentScoreSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 const StudentScore = mongoose.model("StudentScore", studentScoreSchema);
 module.exports = StudentScore;

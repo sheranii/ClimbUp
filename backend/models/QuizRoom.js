@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const quizRoomSchema = new mongoose.Schema(
   {
     roomCode: {
@@ -43,6 +42,5 @@ const quizRoomSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 const QuizRoom = mongoose.model("QuizRoom", quizRoomSchema);
 module.exports = QuizRoom;

@@ -4,13 +4,10 @@ const {
     updateStatsByIdService,
     deleteUserStatsService
 } = require('../services/statsServices');
-
-// UPDATE STATS
 const updateUserStats = async (req, res) => {
     try {
         const { userId, score, topic } = req.body;
         const user = await updateUserStatsService(userId, score, topic);
-
         res.status(200).json({
             message: 'Stats updated successfully',
             user: {
@@ -26,13 +23,10 @@ const updateUserStats = async (req, res) => {
         res.status(error.message === 'User not found' ? 404 : 400).json({ message: error.message });
     }
 };
-
-// GET STATS
 const getUserStats = async (req, res) => {
     try {
         const { userId } = req.params;
         const user = await getUserStatsService(userId);
-
         res.status(200).json({
             id: user._id,
             name: user.name,
@@ -47,13 +41,10 @@ const getUserStats = async (req, res) => {
         res.status(error.message === 'User not found' ? 404 : 500).json({ message: error.message });
     }
 };
-
-// UPDATE USER BY ID (any field)
 const updateUserById = async (req, res) => {
     try {
         const { userId } = req.params;
         const updatedUser = await updateStatsByIdService(userId, req.body);
-
         res.status(200).json({
             success: true,
             message: 'User updated successfully',
@@ -64,13 +55,10 @@ const updateUserById = async (req, res) => {
         res.status(error.message === 'User not found' ? 404 : 400).json({ message: error.message });
     }
 };
-
-// DELETE USER STATS
 const deleteUserStats = async (req, res) => {
     try {
         const { userId } = req.params;
         await deleteUserStatsService(userId);
-
         res.status(200).json({
             message: 'User deleted successfully',
             deletedUserId: userId
@@ -80,7 +68,6 @@ const deleteUserStats = async (req, res) => {
         res.status(error.message === 'User not found' ? 404 : 500).json({ message: error.message });
     }
 };
-
 module.exports = {
     updateUserStats,
     updateUserById,

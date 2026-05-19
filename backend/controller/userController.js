@@ -1,6 +1,4 @@
 const { updateUserService, getAllUsersService } = require('../services/userServices');
-
-// PUT /api/users/:id
 const updateUser = async (req, res, next) => {
     try {
         const updatedUser = await updateUserService(req.params.id, req.body);
@@ -13,12 +11,9 @@ const updateUser = async (req, res, next) => {
         next(error);
     }
 };
-
-// GET /api/users
 const getAllUsers = async (req, res, next) => {
     try {
         const users = await getAllUsersService();
-
         res.status(200).json({
             success: true,
             count: users.length,
@@ -28,6 +23,4 @@ const getAllUsers = async (req, res, next) => {
         next(error);
     }
 };
-
 module.exports = { updateUser, getAllUsers };
-

@@ -972,7 +972,7 @@
                 if (!res.ok) throw new Error(data.message);
 
                 currentRoomCode = data.roomCode;
-                const link = `${window.location.origin}/quiz-room.html?room=${data.roomCode}`;
+                const link = `https://climbup-backend.onrender.com/quiz-room?room=${data.roomCode}`;
                 document.getElementById('room-link-input').value = link;
                 document.getElementById('room-link-result').classList.remove('hidden');
             } catch (err) {

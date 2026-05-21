@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
     "test": "jest --detectOpenHandles --forceExit",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --detectOpenHandles --forceExit"
+    "test:coverage": "jest --coverage --detectOpenHandles --forceExit",
+    "postinstall": "prisma generate"
   },
   "jest": {
     "testEnvironment": "node",

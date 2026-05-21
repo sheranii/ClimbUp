@@ -1,0 +1,21 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model MatchHistory {
+  id         Int      @id @default(autoincrement())
+  userId     String   // References MongoDB User ID
+  userName   String
+  score      Int
+  topic      String
+  roomCode   String
+  timeTaken  Int      // in seconds
+  createdAt  DateTime @default(now())
+}

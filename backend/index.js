@@ -14,6 +14,7 @@ const quizRoutes = require('./routes/quizRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const userRoutes = require('./routes/userRoutes');
+const matchRoutes = require('./routes/matchRoutes');
 const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
@@ -33,6 +34,7 @@ app.use('/api/quiz', quizRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/room', roomRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/matches', matchRoutes);
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });

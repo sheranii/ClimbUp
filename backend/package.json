@@ -10,7 +10,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.test.js"],
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ],
     "coverageDirectory": "coverage",
     "collectCoverageFrom": [
       "controller/**/*.js",
@@ -25,6 +27,8 @@
   "dependencies": {
     "@google/genai": "^1.44.0",
     "@google/generative-ai": "^0.24.1",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
@@ -34,7 +38,9 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.5.0",
+    "pg": "^8.21.0",
     "pkg": "^5.8.1",
+    "prisma": "^7.8.0",
     "socket.io": "^4.8.3",
     "uuid": "^14.0.0"
   },

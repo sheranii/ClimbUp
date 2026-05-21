@@ -1,9 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "",
+  "buildCommand": null,
   "outputDirectory": ".",
   "framework": null,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/socket.io/:path*",
+      "destination": "https://climbup-backend.onrender.com/socket.io/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }

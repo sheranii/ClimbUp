@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: climbup-backend
+    env: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npx prisma migrate deploy
+    startCommand: npm start
+    envVars:
+      # Set these manually in the Render dashboard
+      - key: DATABASE_URL
+        sync: false
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://climbup.vercel.app
+      - key: NODE_ENV
+        value: production
+      - key: SOCKET_IO_URL
+        value: https://climbup-backend.onrender.com

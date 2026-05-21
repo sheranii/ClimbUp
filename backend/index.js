@@ -18,7 +18,9 @@ const matchRoutes = require('./routes/matchRoutes');
 const app = express();
 const httpServer = http.createServer(app);
 const ALLOWED_ORIGINS = [
+    'https://climbup.onrender.com',
     process.env.FRONTEND_URL || 'http://localhost:3000',
+    'http://localhost:3000',
     'http://localhost:5000'
 ];
 app.use(cors({
@@ -58,6 +60,7 @@ app.get('/quiz-room', async (req, res) => {
     }
     res.render('quiz-room', { user });
 });
+app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/client-dist')));
 io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.id}`);
     socket.on('join-room', ({ roomCode, userName, role }) => {

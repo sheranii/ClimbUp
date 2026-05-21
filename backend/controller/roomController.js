@@ -11,8 +11,8 @@ const createRoom = async (req, res) => {
         res.status(201).json({
             message: 'Quiz room created successfully',
             roomCode: room.roomCode,
-            shareableLink: `/quiz-room.html?room=${room.roomCode}`,
-            room
+            shareableLink: `https://climbup-backend.onrender.com/quiz-room?room=${room.roomCode}`,
+            room: room
         });
     } catch (error) {
         console.error('CREATE ROOM ERROR:', error);

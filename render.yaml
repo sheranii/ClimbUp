@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: climbup-backend
+    env: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npx prisma migrate deploy
+    startCommand: npm start
+    envVars:
+      # Auto-linked from the PostgreSQL database below
+      - key: DATABASE_URL
+        fromDatabase:
+          name: climbup-postgres
+          property: connectionString
+      # Set these manually in the Render dashboard after first deploy
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://climbup.vercel.app
+      - key: NODE_ENV
+        value: production
+
+databases:
+  - name: climbup-postgres
+    plan: free
+    region: oregon
+    databaseName: climbup
+    user: climbup_user

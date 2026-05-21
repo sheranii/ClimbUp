@@ -19,6 +19,7 @@ const app = express();
 const httpServer = http.createServer(app);
 const ALLOWED_ORIGINS = [
     'https://climbup.onrender.com',
+    'https://climb-1u7bn17nl-shreya616sharmas-projects.vercel.app',
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'http://localhost:3000',
     'http://localhost:5000'

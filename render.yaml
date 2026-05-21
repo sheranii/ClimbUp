@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     rootDir: backend
-    buildCommand: npm install && npx prisma migrate deploy
+    buildCommand: npm install
     startCommand: npm start
     envVars:
       # Set these manually in the Render dashboard
@@ -18,7 +18,7 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: FRONTEND_URL
-        value: https://climbup.vercel.app
+        value: https://climb-1u7bn17nl-shreya616sharmas-projects.vercel.app
       - key: NODE_ENV
         value: production
       - key: SOCKET_IO_URL

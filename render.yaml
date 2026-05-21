@@ -24,6 +24,8 @@ services:
         value: https://climbup.vercel.app
       - key: NODE_ENV
         value: production
+      - key: SOCKET_IO_URL
+        value: https://climbup-backend.onrender.com
 
 databases:
   - name: climbup-postgres

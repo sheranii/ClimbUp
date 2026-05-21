@@ -60,6 +60,7 @@ app.get('/quiz-room', async (req, res) => {
     }
     res.render('quiz-room', { user });
 });
+app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/client-dist')));
 io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.id}`);
     socket.on('join-room', ({ roomCode, userName, role }) => {
